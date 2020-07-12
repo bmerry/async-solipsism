@@ -1,8 +1,10 @@
-import asyncio
 import socket
 
 
 DEFAULT_CAPACITY = 65536
+
+
+__all__ = ('Socket', 'Queue', 'socketpair')
 
 
 class Queue:
@@ -42,7 +44,7 @@ class Queue:
             ret = self._buffer
             self._buffer = bytearray()
         else:
-            size = min(size, len(self._buffer))
+            n = min(size, len(self._buffer))
             ret = bytes(memoryview(self._buffer))[:n]
             self._buffer = self._buffer[n:]
         return ret
@@ -57,6 +59,9 @@ class Queue:
 class SocketFd:
     def __init__(self, socket):
         self.socket = socket
+
+    def fileno(self):
+        return self
 
     def __int__(self):
         return id(self.socket)
@@ -79,15 +84,17 @@ class Socket:
         self._read_queue = read_queue
         self._write_queue = write_queue
 
-    @property
     def fileno(self):
         return SocketFd(self)
 
-    def getsockname():
+    def getsockname(self):
         raise socket.error('getsockname is not supported')
 
-    def getpeername():
+    def getpeername(self):
         raise socket.error('getpeername is not supported')
+
+    def gettimeout(self):
+        return 0.0
 
     def recv(self, bufsize, flags=0):
         return self._read_queue.read(bufsize)
@@ -110,5 +117,12 @@ class Socket:
         return self._write_queue.write_ready()
 
     def close(self):
+        self._write_queue.write_eof()
         self._write_queue = None
         self._read_queue = None
+
+
+def socketpair():
+    queue1 = Queue()
+    queue2 = Queue()
+    return Socket(queue1, queue2), Socket(queue2, queue1)

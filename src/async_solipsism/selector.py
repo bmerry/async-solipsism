@@ -1,3 +1,14 @@
+import asyncio.base_events
+import selectors
+
+from . import socket
+from .exceptions import SolipsismError
+from .clock import Clock
+
+
+__all__ = ('Selector',)
+
+
 class Selector(selectors._BaseSelectorImpl):
     def __init__(self, clock=None):
         super().__init__()
@@ -36,11 +47,6 @@ class Selector(selectors._BaseSelectorImpl):
         super().close()
         self._closed = True
 
-    def get_map(self):
-        # get_key in the base class treats None as closed
-        return None if self._closed else {}
-
     def _check_closed(self):
         if self._closed:
             raise RuntimeError('Selector is closed')
-

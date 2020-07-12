@@ -1,85 +1,18 @@
 import asyncio
-import selectors
 import socket
 import subprocess
-import warnings
+
+from . import selector
+from .exceptions import SolipsismError
 
 
-__all__ = ('ResolutionWarning', 'SolipsismError', 'Clock', 'Selector', 'EventLoop')
+__all__ = ('EventLoop',)
 
 
-class ResolutionWarning(Warning):
-    pass
-
-
-class SolipsismError(RuntimeError):
-    pass
-
-
-class Clock:
-    def __init__(self, start_time=0.0, resolution=1e-6):
-        if resolution <= 0.0:
-            raise ValueError('Resolution must be positive')
-        self._ticks = round(start_time / resolution)
-        self._resolution = resolution
-
-    @property
-    def resolution(self):
-        return self._resolution
-
-    def time(self):
-        return self._ticks * self._resolution
-
-    def advance(self, delta):
-        ticks = round(delta / self._resolution)
-        if ticks == 0 and delta != 0.0:
-            warnings.warn('delta is less than resolution, so clock will not advance',
-                          ResolutionWarning)
-        self._ticks += ticks
-
-
-class Selector(selectors.BaseSelector):
-    def __init__(self, clock=None):
-        super().__init__()
-        self.clock = Clock() if clock is None else clock
-        self._closed = False
-
-    def register(self, fileobj, events, data=None):
-        self._check_closed()
-        raise SolipsismError('register is not supported')
-
-    def unregister(self, fileobj):
-        self._check_closed()
-        raise SolipsismError('unregister is not supported')
-
-    def modify(self, fileobj, events, data=None):
-        self._check_closed()
-        raise SolipsismError('modify is not supported')
-
-    def select(self, timeout=None):
-        self._check_closed()
-        if timeout >= asyncio.base_events.MAXIMUM_SELECT_TIMEOUT:
-            raise SolipsismError('select with no timeout is not supported')
-        elif timeout > 0:
-            self.clock.advance(timeout)
-        return []
-
-    def close(self):
-        self._closed = True
-
-    def get_map(self):
-        # get_key in the base class treats None as closed
-        return None if self._closed else {}
-
-    def _check_closed(self):
-        if self._closed:
-            raise RuntimeError('Selector is closed')
-
-
-class EventLoop(asyncio.BaseEventLoop):
+class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
     def __init__(self):
-        super().__init__()
-        self._selector = Selector()
+        super().__init__(selector=selector.Selector())
+        self._selector = selector.Selector()
         self._clock_resolution = self._selector.clock.resolution
 
     def time(self):
@@ -172,27 +105,6 @@ class EventLoop(asyncio.BaseEventLoop):
                               **kwargs):
         raise SolipsismError("subprocess_exec is not supported")
 
-    def add_reader(self, fd, callback, *args):
-        raise SolipsismError("add_reader is not supported")
-
-    def remove_reader(self, fd):
-        raise SolipsismError("remove_reader is not supported")
-
-    def add_writer(self, fd, callback, *args):
-        raise SolipsismError("add_writer is not supported")
-
-    def remove_writer(self, fd):
-        raise SolipsismError("remove_writer is not supported")
-
-    async def sock_recv(self, sock, n):
-        raise SolipsismError("sock_recv is not supported")
-
-    async def sock_recv_into(self, sock, buf):
-        raise SolipsismError("sock_recv_into is not supported")
-
-    async def sock_sendall(self, sock, data):
-        raise SolipsismError("sock_sendall is not supported")
-
     async def sock_connect(self, sock, address):
         raise SolipsismError("sock_connect is not supported")
 
@@ -219,7 +131,10 @@ class EventLoop(asyncio.BaseEventLoop):
             start_serving=True):
         raise SolipsismError("create_unix_server is not supported")
 
-    # Methods in BaseEventLoop that we need to implement
-    def _process_events(self, event_list):
-        if event_list:
-            raise SolipsismError("Unexpected events from selector")
+    # Methods in base class that we need to implement/override
+
+    def _make_self_pipe(self):
+        pass
+
+    def _close_self_pipe(self):
+        pass
