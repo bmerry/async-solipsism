@@ -66,3 +66,12 @@ async def test_sock_sendall(size, event_loop):
     wsock.close()
     n = await task
     assert n == size
+
+
+async def test_stream():
+    ((reader1, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
+    writer1.write(b'Hello world\n')
+    data = await reader2.readline()
+    assert data == b'Hello world\n'
+    writer1.close()
+    writer2.close()

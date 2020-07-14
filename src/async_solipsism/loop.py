@@ -2,11 +2,11 @@ import asyncio
 import socket
 import subprocess
 
-from . import selector
+from . import selector, socket as _socket
 from .exceptions import SolipsismError
 
 
-__all__ = ('EventLoop',)
+__all__ = ('EventLoop', 'stream_pairs')
 
 
 class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
@@ -42,7 +42,18 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             local_addr=None, server_hostname=None,
             ssl_handshake_timeout=None,
             happy_eyeballs_delay=None, interleave=None):
-        raise SolipsismError("create_connection is not supported")
+        if ssl:
+            raise SolipsismError("create_connection with SSL is not supported")
+        if sock is None:
+            raise SolipsismError("create_connection is only supported with a socket")
+        return await super().create_connection(
+            protocol_factory, host, port,
+            ssl=ssl, family=family,
+            proto=proto, flags=flags, sock=sock,
+            local_addr=local_addr, server_hostname=server_hostname,
+            ssl_handshake_timeout=ssl_handshake_timeout,
+            happy_eyeballs_delay=happy_eyeballs_delay, interleave=interleave
+        )
 
     async def sendfile(self, transport, file, offset=0, count=None,
                        *, fallback=True):
@@ -138,3 +149,10 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
 
     def _close_self_pipe(self):
         pass
+
+
+async def stream_pairs():
+    sock1, sock2 = _socket.socketpair()
+    streams1 = await asyncio.open_connection(sock=sock1)
+    streams2 = await asyncio.open_connection(sock=sock2)
+    return streams1, streams2

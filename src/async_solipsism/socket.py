@@ -77,7 +77,7 @@ class SocketFd:
 
 class Socket:
     family = 0
-    type = 0
+    type = socket.SOCK_STREAM
     proto = 0
 
     def __init__(self, read_queue, write_queue):
@@ -95,6 +95,10 @@ class Socket:
 
     def gettimeout(self):
         return 0.0
+
+    def setblocking(self, flag):
+        if flag:
+            raise SolipsismError('Socket only support non-blocking operation')
 
     def recv(self, bufsize, flags=0):
         return self._read_queue.read(bufsize)
