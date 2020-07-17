@@ -44,6 +44,7 @@ async def test_delayed_sock_recv(method, delay, event_loop):
     wsock.close()
     await task
 
+
 @pytest.mark.parametrize('size', [10, 10**7])
 async def test_sock_sendall(size, event_loop):
     async def delayed_read(rsock):
@@ -66,6 +67,25 @@ async def test_sock_sendall(size, event_loop):
     wsock.close()
     n = await task
     assert n == size
+
+
+async def test_connect_existing(event_loop, mocker):
+    sock1, sock2 = async_solipsism.socketpair()
+    transport1, protocol1 = await event_loop.connect_accepted_socket(
+        mocker.MagicMock, sock1)
+    transport2, protocol2 = await event_loop.create_connection(
+        mocker.MagicMock, sock=sock2)
+    transport1.write(b'Hello world\n')
+    transport1.write_eof()
+    transport1.close()
+    protocol2.eof_received.return_value = None
+    await asyncio.sleep(1)
+    assert protocol2.method_calls == [
+        mocker.call.connection_made(transport2),
+        mocker.call.data_received(b'Hello world\n'),
+        mocker.call.eof_received(),
+        mocker.call.connection_lost(None)
+    ]
 
 
 async def test_stream():

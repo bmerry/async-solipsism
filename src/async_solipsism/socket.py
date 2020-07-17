@@ -1,5 +1,7 @@
 import socket
 
+from .exceptions import SolipsismError
+
 
 DEFAULT_CAPACITY = 65536
 
@@ -8,8 +10,8 @@ __all__ = ('Socket', 'Queue', 'socketpair')
 
 
 class Queue:
-    def __init__(self, capacity=DEFAULT_CAPACITY):
-        self.capacity = capacity
+    def __init__(self, capacity=None):
+        self.capacity = capacity or DEFAULT_CAPACITY
         self._buffer = bytearray()
         self._eof = False
 
@@ -115,18 +117,24 @@ class Socket:
         return self._write_queue.write(bytes)
 
     def read_ready(self):
-        return self._read_queue.read_ready()
+        return self._read_queue is None or self._read_queue.read_ready()
 
     def write_ready(self):
-        return self._write_queue.write_ready()
+        return self._write_queue is None or self._write_queue.write_ready()
+
+    def shutdown(self, flag):
+        if flag in {socket.SHUT_RD, socket.SHUT_RDWR} and self._read_queue is not None:
+            self._read_queue = None
+            # TODO: do we need to tell the other end that we're closed?
+        if flag in {socket.SHUT_WR, socket.SHUT_RDWR} and self._write_queue is not None:
+            self._write_queue.write_eof()
+            self._write_queue = None
 
     def close(self):
-        self._write_queue.write_eof()
-        self._write_queue = None
-        self._read_queue = None
+        self.shutdown(socket.SHUT_RDWR)
 
 
-def socketpair():
-    queue1 = Queue()
-    queue2 = Queue()
+def socketpair(capacity=None):
+    queue1 = Queue(capacity=capacity)
+    queue2 = Queue(capacity=capacity)
     return Socket(queue1, queue2), Socket(queue2, queue1)

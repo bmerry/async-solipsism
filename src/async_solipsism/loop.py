@@ -86,12 +86,6 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             start_serving=True):
         raise SolipsismError("create_server is not supported")
 
-    async def connect_accepted_socket(
-            self, protocol_factory, sock,
-            *, ssl=None,
-            ssl_handshake_timeout=None):
-        raise SolipsismError("connect_accepted_socket is not supported")
-
     async def connect_read_pipe(self, protocol_factory, pipe):
         raise SolipsismError("connect_read_pipe is not supported")
 
