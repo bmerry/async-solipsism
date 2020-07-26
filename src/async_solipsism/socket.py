@@ -1,4 +1,6 @@
+import asyncio
 import socket
+from collections import deque
 
 from .exceptions import SolipsismError
 
@@ -6,7 +8,7 @@ from .exceptions import SolipsismError
 DEFAULT_CAPACITY = 65536
 
 
-__all__ = ('Socket', 'Queue', 'socketpair')
+__all__ = ('Socket', 'ListenSocket', 'Queue', 'socketpair')
 
 
 class Queue:
@@ -77,23 +79,13 @@ class SocketFd:
         return NotImplemented
 
 
-class Socket:
+class _SocketBase:
     family = 0
     type = socket.SOCK_STREAM
     proto = 0
 
-    def __init__(self, read_queue, write_queue):
-        self._read_queue = read_queue
-        self._write_queue = write_queue
-
     def fileno(self):
         return SocketFd(self)
-
-    def getsockname(self):
-        raise socket.error('getsockname is not supported')
-
-    def getpeername(self):
-        raise socket.error('getpeername is not supported')
 
     def gettimeout(self):
         return 0.0
@@ -102,11 +94,25 @@ class Socket:
         if flag:
             raise SolipsismError('Socket only support non-blocking operation')
 
+
+class Socket(_SocketBase):
+    """Emulate a connected TCP socket."""
+
+    def __init__(self, read_queue, write_queue):
+        self._read_queue = read_queue
+        self._write_queue = write_queue
+
+    def getsockname(self):
+        raise socket.error('getsockname is not supported')
+
+    def getpeername(self):
+        raise socket.error('getpeername is not supported')
+
     def recv(self, bufsize, flags=0):
         return self._read_queue.read(bufsize)
 
     def recv_into(self, buffer, nbytes=0, flags=0):
-        # TODO: implement in re
+        # TODO: implement more efficiently?
         if not nbytes:
             nbytes = len(buffer)
         data = self.recv(nbytes)
@@ -132,6 +138,49 @@ class Socket:
 
     def close(self):
         self.shutdown(socket.SHUT_RDWR)
+
+
+class ListenSocket(_SocketBase):
+    """Emulate a TCP socket that is listening for incoming connections."""
+
+    def __init__(self, sockname):
+        self._sockname = sockname
+        self._queue = deque()
+
+    def getsockname(self):
+        return self._sockname
+
+    def listen(self, backlog=None):
+        pass
+
+    def read_ready(self):
+        if self._queue is None:
+            return True
+        while self._queue and self._queue[0].done():
+            self._queue.popleft()
+        return bool(self._queue)
+
+    def close(self):
+        for waiter in self._queue:
+            if not waiter.done():
+                waiter.set_exception(ConnectionResetError("Remote socket was closed"))
+        self._queue = None
+
+    def accept(self):
+        if self._queue is None:
+            raise RuntimeError('Socket is already closed')
+        while self._queue and self._queue[0].done():
+            self._queue.popleft()
+        socks = socketpair()
+        remote = self._queue.popleft()
+        remote.set_result(socks[0])
+        return socks[1], ()
+
+    async def make_connection(self):
+        """Connect to the server represented by this listening socket."""
+        waiter = asyncio.get_event_loop().create_future()
+        self._queue.append(waiter)
+        return await waiter
 
 
 def socketpair(capacity=None):

@@ -95,3 +95,36 @@ async def test_stream():
     assert data == b'Hello world\n'
     writer1.close()
     writer2.close()
+
+
+async def test_server(event_loop):
+    def callback(reader, writer):
+        server_conn.set_result((reader, writer))
+
+    server_conn = event_loop.create_future()
+    server = await asyncio.start_server(callback, 'test.invalid', 1234)
+    c_reader, c_writer = await asyncio.open_connection('test.invalid', 1234)
+    s_reader, s_writer = await server_conn
+
+    c_writer.write(b'Hello world\n')
+    assert await s_reader.readline() == b'Hello world\n'
+
+    s_writer.write(b'Testing\n')
+    assert await c_reader.readline() == b'Testing\n'
+    c_writer.close()
+    s_writer.close()
+    server.close()
+    await server.wait_closed()
+
+
+async def test_close_server(event_loop):
+    server = await asyncio.start_server(lambda reader, writer: None, 'test.invalid', 1234)
+    server.close()
+    await server.wait_closed()
+    with pytest.raises(ConnectionRefusedError):
+        await event_loop.create_connection('test.invalid', 1234)
+
+
+async def test_create_connection_no_listener(event_loop):
+    with pytest.raises(ConnectionRefusedError):
+        await event_loop.create_connection('test.invalid', 1234)

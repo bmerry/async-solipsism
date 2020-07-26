@@ -14,6 +14,8 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         super().__init__(selector=selector.Selector())
         self._selector = selector.Selector()
         self._clock_resolution = self._selector.clock.resolution
+        # Map from (host, port) pair to ListenSocket
+        self.__listening_sockets = {}
 
     def time(self):
         return self._selector.clock.time()
@@ -45,9 +47,16 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         if ssl:
             raise SolipsismError("create_connection with SSL is not supported")
         if sock is None:
-            raise SolipsismError("create_connection is only supported with a socket")
+            if host is None and port is None:
+                raise ValueError('host and port was not specified and no sock specified')
+            addr = (host, port)
+            try:
+                listener = self.__listening_sockets[addr]
+            except KeyError:
+                raise ConnectionRefusedError(f'No socket listening on {host}:{port}') from None
+            sock = await listener.make_connection()
         return await super().create_connection(
-            protocol_factory, host, port,
+            protocol_factory, None, None,
             ssl=ssl, family=family,
             proto=proto, flags=flags, sock=sock,
             local_addr=local_addr, server_hostname=server_hostname,
@@ -84,7 +93,29 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             reuse_port=None,
             ssl_handshake_timeout=None,
             start_serving=True):
-        raise SolipsismError("create_server is not supported")
+        if ssl is not None:
+            raise SolipsismError("create_server with ssl is not supported")
+        if sock is None:
+            if host is None and port is None:
+                raise ValueError('Neither host/port nor sock were specified')
+            # TODO: what if host is actually a list?
+            addr = (host, port)
+            if addr in self.__listening_sockets:
+                raise SolipsismError("Reuse of listening addresses is not supported")
+            sock = _socket.ListenSocket(addr)
+            self.__listening_sockets[addr] = sock
+        return await super().create_server(
+            protocol_factory, None, None,
+            family=family,
+            flags=flags,
+            sock=sock,
+            backlog=backlog,
+            ssl=ssl,
+            reuse_address=False,
+            reuse_port=False,
+            ssl_handshake_timeout=ssl_handshake_timeout,
+            start_serving=start_serving
+        )
 
     async def connect_read_pipe(self, protocol_factory, pipe):
         raise SolipsismError("connect_read_pipe is not supported")
@@ -143,6 +174,11 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
 
     def _close_self_pipe(self):
         pass
+
+    def _stop_serving(self, sock):
+        addr = sock.getsockname()
+        self.__listening_sockets.pop(addr)
+        super()._stop_serving(sock)
 
 
 async def stream_pairs():
