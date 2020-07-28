@@ -23,6 +23,14 @@ async def test_sleep(event_loop):
     assert event_loop.time() == 2.0
 
 
+def test_sleep_forever(event_loop):
+    async def zzz():
+        await asyncio.Future()
+
+    with pytest.raises(async_solipsism.SleepForeverError):
+        event_loop.run_until_complete(zzz())
+
+
 @pytest.mark.parametrize('method', ['recv', 'recv_into'])
 @pytest.mark.parametrize('delay', [False, True])
 async def test_delayed_sock_recv(method, delay, event_loop):

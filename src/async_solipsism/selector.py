@@ -2,7 +2,7 @@ import asyncio.base_events
 import selectors
 
 from . import socket
-from .exceptions import SolipsismError
+from .exceptions import SolipsismError, SleepForeverError
 from .clock import Clock
 
 
@@ -38,7 +38,7 @@ class Selector(selectors._BaseSelectorImpl):
         if ready:
             return ready
         elif timeout is None or timeout >= asyncio.base_events.MAXIMUM_SELECT_TIMEOUT:
-            raise SolipsismError('select with no timeout and no ready events')
+            raise SleepForeverError('select with no timeout and no ready events')
         elif timeout > 0:
             self.clock.advance(timeout)
         return []
