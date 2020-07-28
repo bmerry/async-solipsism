@@ -1,4 +1,6 @@
 import asyncio
+import concurrent.futures
+import threading
 
 import pytest
 
@@ -128,3 +130,27 @@ async def test_close_server(event_loop):
 async def test_create_connection_no_listener(event_loop):
     with pytest.raises(ConnectionRefusedError):
         await event_loop.create_connection('test.invalid', 1234)
+
+
+async def test_run_in_executor_implicit(event_loop):
+    thread_id = await event_loop.run_in_executor(None, threading.get_ident)
+    assert isinstance(thread_id, int)
+    assert thread_id != threading.get_ident()
+
+async def test_run_in_executor_implicit(event_loop):
+    my_executor = concurrent.futures.ThreadPoolExecutor(1)
+    expected_thread_id = my_executor.submit(threading.get_ident).result()
+    assert isinstance(expected_thread_id, int)
+    thread_id = await event_loop.run_in_executor(my_executor, threading.get_ident)
+    assert thread_id == expected_thread_id
+    my_executor.shutdown()
+
+
+async def test_sendfile(event_loop, tmp_path):
+    tmp_file = tmp_path / 'test_sendfile.txt'
+    tmp_file.write_bytes(b'Hello world\n')
+    ((reader1, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
+    with open(tmp_file, 'rb') as f:
+        await event_loop.sendfile(writer1.transport, f)
+    line = await reader2.readline()
+    assert line == b'Hello world\n'

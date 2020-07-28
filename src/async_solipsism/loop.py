@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import socket
 import subprocess
 
@@ -23,8 +24,17 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
     def call_soon_threadsafe(self, callback, *args, context=None):
         raise SolipsismError("call_soon_threadsafe is not supported")
 
-    def run_in_executor(self, executor, func, *args):
-        raise SolipsismError("run_in_executor is not supported")
+    async def run_in_executor(self, executor, func, *args):
+        # Mostly copies the base class code, but runs synchronously
+        self._check_closed()
+        if self._debug:
+            self._check_callback(func, 'run_in_executor')
+        if executor is None:
+            executor = self._default_executor
+            if executor is None:
+                executor = concurrent.futures.ThreadPoolExecutor()
+                self._default_executor = executor
+        return executor.submit(func, *args).result()
 
     async def getaddrinfo(self, host, port, *,
                           family=0, type=0, proto=0, flags=0):
@@ -32,10 +42,6 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
 
     async def getnameinfo(self, sockaddr, flags=0):
         raise SolipsismError("getnameinfo is not supported")
-
-    async def sock_sendfile(self, sock, file, offset=0, count=None,
-                            *, fallback=True):
-        raise SolipsismError("sock_sendfile is not supported")
 
     async def create_connection(
             self, protocol_factory, host=None, port=None,
@@ -63,10 +69,6 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             ssl_handshake_timeout=ssl_handshake_timeout,
             happy_eyeballs_delay=happy_eyeballs_delay, interleave=interleave
         )
-
-    async def sendfile(self, transport, file, offset=0, count=None,
-                       *, fallback=True):
-        raise SolipsismError("sendfile is not supported")
 
     async def start_tls(self, transport, protocol, sslcontext, *,
                         server_side=False,
