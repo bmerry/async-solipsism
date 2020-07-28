@@ -183,8 +183,8 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         super()._stop_serving(sock)
 
 
-async def stream_pairs():
-    sock1, sock2 = _socket.socketpair()
+async def stream_pairs(capacity=None):
+    sock1, sock2 = _socket.socketpair(capacity=capacity)
     streams1 = await asyncio.open_connection(sock=sock1)
     streams2 = await asyncio.open_connection(sock=sock2)
     return streams1, streams2
