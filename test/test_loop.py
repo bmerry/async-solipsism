@@ -17,6 +17,7 @@
 
 import asyncio
 import concurrent.futures
+import sys
 import threading
 
 import pytest
@@ -48,7 +49,13 @@ def test_sleep_forever(event_loop):
         event_loop.run_until_complete(zzz())
 
 
-@pytest.mark.parametrize('method', ['recv', 'recv_into'])
+@pytest.mark.parametrize(
+    'method',
+    [
+        'recv',
+        pytest.param('recv_into', marks=pytest.mark.skipif("sys.version_info < (3, 7)"))
+    ]
+)
 @pytest.mark.parametrize('delay', [False, True])
 async def test_delayed_sock_recv(method, delay, event_loop):
     async def delayed_write(wsock):

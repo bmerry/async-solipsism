@@ -62,8 +62,7 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
 
     async def create_connection(
             self, protocol_factory, host=None, port=None,
-            *, ssl=None, family=0,
-            proto=0, flags=0, sock=None, **kwargs):
+            *, ssl=None, sock=None, **kwargs):
         if ssl:
             raise SolipsismError("create_connection with SSL is not supported")
         if sock is None:
@@ -77,9 +76,7 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             sock = await listener.make_connection()
         return await super().create_connection(
             protocol_factory, None, None,
-            ssl=ssl, family=family,
-            proto=proto, flags=flags, sock=sock,
-            **kwargs
+            ssl=ssl, sock=sock, **kwargs
         )
 
     async def start_tls(self, transport, protocol, sslcontext, *,
@@ -98,15 +95,11 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
     async def create_server(
             self, protocol_factory, host=None, port=None,
             *,
-            family=socket.AF_UNSPEC,
-            flags=socket.AI_PASSIVE,
             sock=None,
-            backlog=100,
             ssl=None,
             reuse_address=None,
             reuse_port=None,
-            ssl_handshake_timeout=None,
-            start_serving=True):
+            **kwargs):
         if ssl is not None:
             raise SolipsismError("create_server with ssl is not supported")
         if sock is None:
@@ -120,15 +113,11 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             self.__listening_sockets[addr] = sock
         return await super().create_server(
             protocol_factory, None, None,
-            family=family,
-            flags=flags,
             sock=sock,
-            backlog=backlog,
             ssl=ssl,
             reuse_address=False,
             reuse_port=False,
-            ssl_handshake_timeout=ssl_handshake_timeout,
-            start_serving=start_serving
+            **kwargs
         )
 
     async def connect_read_pipe(self, protocol_factory, pipe):
