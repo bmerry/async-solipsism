@@ -162,7 +162,8 @@ async def test_run_in_executor_implicit(event_loop):
     assert isinstance(thread_id, int)
     assert thread_id != threading.get_ident()
 
-async def test_run_in_executor_implicit(event_loop):
+
+async def test_run_in_executor_explicit(event_loop):
     my_executor = concurrent.futures.ThreadPoolExecutor(1)
     expected_thread_id = my_executor.submit(threading.get_ident).result()
     assert isinstance(expected_thread_id, int)
