@@ -17,7 +17,6 @@
 
 import asyncio
 import concurrent.futures
-import sys
 import threading
 
 import pytest

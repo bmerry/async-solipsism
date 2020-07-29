@@ -17,7 +17,6 @@
 
 import asyncio
 import concurrent.futures
-import socket
 import subprocess
 
 from . import selector, socket as _socket
