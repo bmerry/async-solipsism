@@ -63,10 +63,7 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
     async def create_connection(
             self, protocol_factory, host=None, port=None,
             *, ssl=None, family=0,
-            proto=0, flags=0, sock=None,
-            local_addr=None, server_hostname=None,
-            ssl_handshake_timeout=None,
-            happy_eyeballs_delay=None, interleave=None):
+            proto=0, flags=0, sock=None, **kwargs):
         if ssl:
             raise SolipsismError("create_connection with SSL is not supported")
         if sock is None:
@@ -82,9 +79,7 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             protocol_factory, None, None,
             ssl=ssl, family=family,
             proto=proto, flags=flags, sock=sock,
-            local_addr=local_addr, server_hostname=server_hostname,
-            ssl_handshake_timeout=ssl_handshake_timeout,
-            happy_eyeballs_delay=happy_eyeballs_delay, interleave=interleave
+            **kwargs
         )
 
     async def start_tls(self, transport, protocol, sslcontext, *,
