@@ -178,6 +178,7 @@ async def test_run_in_executor_explicit(event_loop):
     my_executor.shutdown()
 
 
+@pytest.mark.skipif("sys.version_info < (3, 7)")
 async def test_sendfile(event_loop, tmp_path):
     tmp_file = tmp_path / 'test_sendfile.txt'
     tmp_file.write_bytes(b'Hello world\n')
