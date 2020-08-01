@@ -123,3 +123,9 @@ such as a sidecar server.
 
 Calling functions that are not supported will generally raise
 `SolipsismError`.
+
+## Changelog
+
+### 0.1
+
+First release.
