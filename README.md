@@ -17,7 +17,7 @@ run:
 
 ```python
 print(loop.time())
-await asyncio.sleep(2)
+await asyncio.sleep(60)
 print(loop.time())
 ```
 
@@ -69,7 +69,7 @@ written to `writer2` will be received by `reader1`.
 
 It is also possible to use the asyncio functions for starting servers and
 connecting to them. You can supply any host name and port, even if they're not
-actually associated to the machine! For example,
+actually associated with the machine! For example,
 
 ```python
 server = await asyncio.start_server(callback, 'test.invalid', 1234)
