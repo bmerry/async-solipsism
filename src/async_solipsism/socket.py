@@ -115,15 +115,17 @@ class _SocketBase:
 class Socket(_SocketBase):
     """Emulate a connected TCP socket."""
 
-    def __init__(self, read_queue, write_queue):
+    def __init__(self, read_queue, write_queue, sockname=None, peername=None):
         self._read_queue = read_queue
         self._write_queue = write_queue
+        self._sockname = sockname
+        self._peername = peername
 
     def getsockname(self):
-        raise socket.error('getsockname is not supported')
+        return self._sockname
 
     def getpeername(self):
-        raise socket.error('getpeername is not supported')
+        return self._peername
 
     def recv(self, bufsize, flags=0):
         return self._read_queue.read(bufsize)
@@ -200,7 +202,9 @@ class ListenSocket(_SocketBase):
         return await waiter
 
 
-def socketpair(capacity=None):
+def socketpair(capacity=None, sock1_name=None, sock2_name=None):
     queue1 = Queue(capacity=capacity)
     queue2 = Queue(capacity=capacity)
-    return Socket(queue1, queue2), Socket(queue2, queue1)
+    sock1 = Socket(queue1, queue2, sockname=sock1_name, peername=sock2_name)
+    sock2 = Socket(queue2, queue1, sockname=sock2_name, peername=sock1_name)
+    return sock1, sock2
