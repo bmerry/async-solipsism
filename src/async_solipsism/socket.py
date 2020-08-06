@@ -190,6 +190,8 @@ class ListenSocket(_SocketBase):
             raise RuntimeError('Socket is already closed')
         while self._queue and self._queue[0].done():
             self._queue.popleft()
+        if not self._queue:
+            raise BlockingIOError
         socks = socketpair()
         remote = self._queue.popleft()
         remote.set_result(socks[0])
