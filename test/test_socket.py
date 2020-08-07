@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with async-solipsism.  If not, see <https://www.gnu.org/licenses/>.
 
+import socket
+
 import pytest
 
 import async_solipsism
@@ -42,3 +44,12 @@ def test_setblocking(sock):
 def test_sockaddr(given, expected):
     sock = async_solipsism.socketpair(sock1_name=given)[0]
     assert sock.getsockname() == expected
+
+
+def test_setsockopt_known(sock):
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
+
+def test_setsockopt_unknown(sock):
+    with pytest.warns(UserWarning, match='Ignoring socket option'):
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024)

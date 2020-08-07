@@ -18,6 +18,7 @@
 import asyncio
 import socket
 from collections import deque
+import warnings
 
 from .exceptions import SolipsismError
 
@@ -110,6 +111,16 @@ class _SocketBase:
     def setblocking(self, flag):
         if flag:
             raise SolipsismError('Socket only support non-blocking operation')
+
+    def setsockopt(self, level, optname, value, optlen=None):
+        key = (level, optname)
+        if key not in {
+            (socket.IPPROTO_TCP, socket.TCP_NODELAY),
+            (socket.SOL_SOCKET, socket.SO_REUSEADDR),
+            (socket.SOL_SOCKET, socket.SO_REUSEPORT)
+        }:
+            warnings.warn(f'Ignoring socket option {level}:{optname}')
+        # TODO: implement SO_RCVBUF/SO_SNDBUF to change the queue capacity.
 
 
 def _normalise_ipv6_sockaddr(addr):
