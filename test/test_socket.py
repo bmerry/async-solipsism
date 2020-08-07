@@ -29,3 +29,16 @@ def test_setblocking(sock):
     sock.setblocking(False)
     with pytest.raises(async_solipsism.SolipsismError):
         sock.setblocking(True)
+
+
+@pytest.mark.parametrize(
+    'given, expected',
+    [
+        (None, ('::', 0, 0, 0)),
+        (('fe80::', 1234), ('fe80::', 1234, 0, 0)),
+        (('fe80::', 1, 2, 3), ('fe80::', 1, 2, 3))
+    ]
+)
+def test_sockaddr(given, expected):
+    sock = async_solipsism.socketpair(sock1_name=given)[0]
+    assert sock.getsockname() == expected

@@ -97,7 +97,7 @@ class SocketFd:
 
 
 class _SocketBase:
-    family = 0
+    family = socket.AF_INET6
     type = socket.SOCK_STREAM
     proto = 0
 
@@ -112,14 +112,24 @@ class _SocketBase:
             raise SolipsismError('Socket only support non-blocking operation')
 
 
+def _normalise_ipv6_sockaddr(addr):
+    """Convert a socket address to a :meth:`socket.socket.getsockname` result for IPv6."""
+    if addr is None:
+        return ('::', 0, 0, 0)
+    # The flow-id and scope are optional
+    if not isinstance(addr, tuple) or len(addr) < 2 or len(addr) > 4:
+        raise TypeError('AF_INET6 address must be a tuple (host, port[, flowinfo[, scopeid]])')
+    return addr + (0,) * (4 - len(addr))
+
+
 class Socket(_SocketBase):
     """Emulate a connected TCP socket."""
 
     def __init__(self, read_queue, write_queue, sockname=None, peername=None):
         self._read_queue = read_queue
         self._write_queue = write_queue
-        self._sockname = sockname
-        self._peername = peername
+        self._sockname = _normalise_ipv6_sockaddr(sockname)
+        self._peername = _normalise_ipv6_sockaddr(peername)
 
     def getsockname(self):
         return self._sockname
@@ -163,7 +173,7 @@ class ListenSocket(_SocketBase):
     """Emulate a TCP socket that is listening for incoming connections."""
 
     def __init__(self, sockname):
-        self._sockname = sockname
+        self._sockname = _normalise_ipv6_sockaddr(sockname)
         self._queue = deque()
 
     def getsockname(self):
@@ -175,12 +185,12 @@ class ListenSocket(_SocketBase):
     def read_ready(self):
         if self._queue is None:
             return True
-        while self._queue and self._queue[0].done():
+        while self._queue and self._queue[0][0].done():
             self._queue.popleft()
         return bool(self._queue)
 
     def close(self):
-        for waiter in self._queue:
+        for waiter, peername in self._queue:
             if not waiter.done():
                 waiter.set_exception(ConnectionResetError("Remote socket was closed"))
         self._queue = None
@@ -188,19 +198,19 @@ class ListenSocket(_SocketBase):
     def accept(self):
         if self._queue is None:
             raise RuntimeError('Socket is already closed')
-        while self._queue and self._queue[0].done():
+        while self._queue and self._queue[0][0].done():
             self._queue.popleft()
         if not self._queue:
             raise BlockingIOError
-        socks = socketpair()
-        remote = self._queue.popleft()
-        remote.set_result(socks[0])
-        return socks[1], ()
+        socks = socketpair(sock1_name=self._queue[0][1], sock2_name=self._sockname)
+        waiter, peername = self._queue.popleft()
+        waiter.set_result(socks[0])
+        return socks[1], peername
 
-    async def make_connection(self):
+    async def make_connection(self, peername):
         """Connect to the server represented by this listening socket."""
         waiter = asyncio.get_event_loop().create_future()
-        self._queue.append(waiter)
+        self._queue.append((waiter, peername))
         return await waiter
 
 

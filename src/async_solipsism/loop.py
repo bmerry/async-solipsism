@@ -33,6 +33,7 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         self._clock_resolution = self._selector.clock.resolution
         # Map from (host, port) pair to ListenSocket
         self.__listening_sockets = {}
+        self.__next_port = 1
 
     def time(self):
         return self._selector.clock.time()
@@ -67,12 +68,14 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         if sock is None:
             if host is None and port is None:
                 raise ValueError('host and port was not specified and no sock specified')
-            addr = (host, port)
+            addr = (host, port, 0, 0)
             try:
                 listener = self.__listening_sockets[addr]
             except KeyError:
                 raise ConnectionRefusedError(f'No socket listening on {host}:{port}') from None
-            sock = await listener.make_connection()
+            port = self.__next_port
+            self.__next_port += 1
+            sock = await listener.make_connection(('::1', port, 0, 0))
         return await super().create_connection(
             protocol_factory, None, None,
             ssl=ssl, sock=sock, **kwargs
@@ -105,7 +108,7 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             if host is None and port is None:
                 raise ValueError('Neither host/port nor sock were specified')
             # TODO: what if host is actually a list?
-            addr = (host, port)
+            addr = (host, port, 0, 0)
             if addr in self.__listening_sockets:
                 raise SolipsismError("Reuse of listening addresses is not supported")
             sock = _socket.ListenSocket(addr)

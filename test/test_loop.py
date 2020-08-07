@@ -138,6 +138,10 @@ async def test_server(event_loop):
     server = await asyncio.start_server(callback, 'test.invalid', 1234)
     c_reader, c_writer = await asyncio.open_connection('test.invalid', 1234)
     s_reader, s_writer = await server_conn
+    c_socket = c_writer.get_extra_info('socket')
+    s_socket = s_writer.get_extra_info('socket')
+    assert c_socket.getpeername() == s_socket.getsockname() == ('test.invalid', 1234, 0, 0)
+    assert s_socket.getpeername() == c_socket.getsockname() == ('::1', 1, 0, 0)
 
     c_writer.write(b'Hello world\n')
     assert await s_reader.readline() == b'Hello world\n'
