@@ -16,6 +16,7 @@
 # along with async-solipsism.  If not, see <https://www.gnu.org/licenses/>.
 
 import asyncio
+import errno
 import socket
 from collections import deque
 import warnings
@@ -46,7 +47,7 @@ class Queue:
 
     def write(self, data):
         if self._eof:
-            raise RuntimeError('Cannot write after connection closed')
+            raise BrokenPipeError(errno.EPIPE, 'Broken pipe')
         if len(self) >= self.capacity:
             return None
         n = len(data)
@@ -170,8 +171,8 @@ class Socket(_SocketBase):
 
     def shutdown(self, flag):
         if flag in {socket.SHUT_RD, socket.SHUT_RDWR} and self._read_queue is not None:
+            self._read_queue.write_eof()
             self._read_queue = None
-            # TODO: do we need to tell the other end that we're closed?
         if flag in {socket.SHUT_WR, socket.SHUT_RDWR} and self._write_queue is not None:
             self._write_queue.write_eof()
             self._write_queue = None
