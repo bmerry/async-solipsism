@@ -57,3 +57,15 @@ def test_setsockopt_unknown(sock, caplog):
 def test_sockaddr(given, expected):
     sock = async_solipsism.socketpair(sock1_name=given)[0]
     assert sock.getsockname() == expected
+
+
+@pytest.mark.parametrize('end', ['read', 'write'])
+def test_use_after_shutdown(end):
+    sock0, sock1 = async_solipsism.socketpair()
+    if end == 'read':
+        sock0.shutdown(socket.SHUT_RD)
+    else:
+        sock1.shutdown(socket.SHUT_WR)
+    assert sock0.recv(1) == b''
+    with pytest.raises(BrokenPipeError):
+        sock1.send(b'hello')

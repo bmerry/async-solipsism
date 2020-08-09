@@ -76,7 +76,7 @@ class Queue:
         return self._eof or self._buffer
 
     def write_ready(self):
-        return len(self) < self.capacity
+        return self._eof or len(self) < self.capacity
 
 
 class SocketFd:
@@ -143,13 +143,20 @@ class Socket(_SocketBase):
         self._sockname = _normalise_ipv6_sockaddr(sockname)
         self._peername = _normalise_ipv6_sockaddr(peername)
 
+    def _check_closed(self):
+        if self._read_queue is None or self._write_queue is None:
+            raise OSError(errno.EBADF, 'Bad file descriptor')
+
     def getsockname(self):
+        self._check_closed()
         return self._sockname
 
     def getpeername(self):
+        self._check_closed()
         return self._peername
 
     def recv(self, bufsize, flags=0):
+        self._check_closed()
         return self._read_queue.read(bufsize)
 
     def recv_into(self, buffer, nbytes=0, flags=0):
@@ -161,6 +168,7 @@ class Socket(_SocketBase):
         return len(data)
 
     def send(self, bytes, flags=0):
+        self._check_closed()
         return self._write_queue.write(bytes)
 
     def read_ready(self):
@@ -170,15 +178,16 @@ class Socket(_SocketBase):
         return self._write_queue is None or self._write_queue.write_ready()
 
     def shutdown(self, flag):
+        self._check_closed()
         if flag in {socket.SHUT_RD, socket.SHUT_RDWR} and self._read_queue is not None:
             self._read_queue.write_eof()
-            self._read_queue = None
         if flag in {socket.SHUT_WR, socket.SHUT_RDWR} and self._write_queue is not None:
             self._write_queue.write_eof()
-            self._write_queue = None
 
     def close(self):
         self.shutdown(socket.SHUT_RDWR)
+        self._read_queue = None
+        self._write_queue = None
 
 
 class ListenSocket(_SocketBase):
