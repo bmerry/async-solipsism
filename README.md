@@ -126,6 +126,13 @@ Calling functions that are not supported will generally raise
 
 ## Changelog
 
+### 0.2
+
+- Numerous fixes to make the fake sockets behave more like real ones.
+- Sockets now return IPv6 addresses from `getsockname`.
+- Implement `setsockopt`.
+- Introduce `SolipsismWarning` base class for warnings.
+
 ### 0.1
 
 First release.

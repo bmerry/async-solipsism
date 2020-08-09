@@ -19,4 +19,4 @@ from .exceptions import *  # noqa
 from .socket import *      # noqa
 from .loop import *        # noqa
 
-__version__ = '0.1'
+__version__ = '0.2'
