@@ -33,6 +33,19 @@ def test_setblocking(sock):
         sock.setblocking(True)
 
 
+def test_setsockopt_known(sock, caplog):
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
+
+def test_setsockopt_unknown(sock, caplog):
+    try:
+        opt = socket.IP_MULTICAST_LOOP
+    except AttributeError:
+        pytest.skip('IP_MULTICAST_LOOP not defined')
+    with pytest.warns(async_solipsism.SolipsismWarning, match='Ignoring socket option'):
+        sock.setsockopt(socket.IPPROTO_IP, opt, 1)
+
+
 @pytest.mark.parametrize(
     'given, expected',
     [
@@ -44,12 +57,3 @@ def test_setblocking(sock):
 def test_sockaddr(given, expected):
     sock = async_solipsism.socketpair(sock1_name=given)[0]
     assert sock.getsockname() == expected
-
-
-def test_setsockopt_known(sock):
-    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
-
-def test_setsockopt_unknown(sock):
-    with pytest.warns(UserWarning, match='Ignoring socket option'):
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024)

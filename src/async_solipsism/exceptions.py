@@ -15,10 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with async-solipsism.  If not, see <https://www.gnu.org/licenses/>.
 
-__all__ = ('ResolutionWarning', 'SolipsismError', 'SleepForeverError')
+__all__ = ('ResolutionWarning', 'SolipsismWarning', 'SolipsismError', 'SleepForeverError')
 
 
-class ResolutionWarning(Warning):
+class SolipsismWarning(Warning):
+    pass
+
+
+class ResolutionWarning(SolipsismWarning):
     pass
 
 

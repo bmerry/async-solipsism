@@ -21,7 +21,7 @@ import socket
 from collections import deque
 import warnings
 
-from .exceptions import SolipsismError
+from .exceptions import SolipsismWarning, SolipsismError
 
 
 DEFAULT_CAPACITY = 65536
@@ -120,7 +120,7 @@ class _SocketBase:
             (socket.SOL_SOCKET, socket.SO_REUSEADDR),
             (socket.SOL_SOCKET, socket.SO_REUSEPORT)
         }:
-            warnings.warn(f'Ignoring socket option {level}:{optname}')
+            warnings.warn(f'Ignoring socket option {level}:{optname}', SolipsismWarning)
         # TODO: implement SO_RCVBUF/SO_SNDBUF to change the queue capacity.
 
 
