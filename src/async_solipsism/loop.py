@@ -109,10 +109,12 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
                 raise ValueError('Neither host/port nor sock were specified')
             # TODO: what if host is actually a list?
             addr = (host, port, 0, 0)
-            if addr in self.__listening_sockets:
-                raise SolipsismError("Reuse of listening addresses is not supported")
             sock = _socket.ListenSocket(addr)
-            self.__listening_sockets[addr] = sock
+        else:
+            addr = sock.getsockname()
+        if addr in self.__listening_sockets:
+            raise SolipsismError("Reuse of listening addresses is not supported")
+        self.__listening_sockets[addr] = sock
         return await super().create_server(
             protocol_factory, None, None,
             sock=sock,
