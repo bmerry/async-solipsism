@@ -162,6 +162,11 @@ Calling functions that are not supported will generally raise
 
 ## Changelog
 
+### 0.3
+
+- Fix `start_server` with an explicit socket.
+- Update README with an example of aiohttp integration.
+
 ### 0.2
 
 - Numerous fixes to make the fake sockets behave more like real ones.

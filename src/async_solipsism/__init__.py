@@ -1,4 +1,4 @@
-# Copyright 2020 Bruce Merry
+# Copyright 2020-2021 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -19,4 +19,4 @@ from .exceptions import *  # noqa
 from .socket import *      # noqa
 from .loop import *        # noqa
 
-__version__ = '0.2'
+__version__ = '0.3'
