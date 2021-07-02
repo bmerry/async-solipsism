@@ -130,12 +130,17 @@ async def test_stream():
     writer2.close()
 
 
-async def test_server(event_loop):
+@pytest.mark.parametrize('manual_socket', [False, True])
+async def test_server(event_loop, manual_socket):
     def callback(reader, writer):
         server_conn.set_result((reader, writer))
 
     server_conn = event_loop.create_future()
-    server = await asyncio.start_server(callback, 'test.invalid', 1234)
+    if manual_socket:
+        listen_socket = async_solipsism.ListenSocket(('test.invalid', 1234))
+        server = await asyncio.start_server(callback, sock=listen_socket)
+    else:
+        server = await asyncio.start_server(callback, 'test.invalid', 1234)
     c_reader, c_writer = await asyncio.open_connection('test.invalid', 1234)
     s_reader, s_writer = await server_conn
     c_socket = c_writer.get_extra_info('socket')
