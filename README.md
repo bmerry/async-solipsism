@@ -98,6 +98,42 @@ def event_loop():
     loop.close()
 ```
 
+### Integration with pytest-aiohttp
+
+A little extra work is required to work with aiohttp's test utilities, but it
+is possible. It's necessary to patch an aiohttp function which creates the
+socket. Here is a minimal example of a test case.
+
+```python
+import async_solipsism
+import pytest
+from aiohttp import web
+
+
+@pytest.fixture
+def loop(mocker):
+    mocker.patch(
+        "aiohttp.test_utils.get_port_socket",
+        lambda host, port: async_solipsism.ListenSocket((host, port if port else 80)),
+    )
+    loop = async_solipsism.EventLoop()
+    yield loop
+    loop.close()
+
+
+async def test_integration(aiohttp_client):
+    app = web.Application()
+    client = await aiohttp_client(app)
+    resp = await client.post("/hey", json={})
+    assert resp.status == 404
+```
+
+Note that the event loop fixture is called `loop`, and not `event_loop`, as
+that is what aiohttp's pytest plugin expects. If you need to run more than one
+test server concurrently, you'll need to extend the socket callback to assign
+them each a different port (async-solipsism does not currently handle mapping
+port 0 to an unused port).
+
 ## Limitations
 
 The requirement to have no interaction with the outside world naturally
