@@ -101,38 +101,42 @@ def event_loop():
 ### Integration with pytest-aiohttp
 
 A little extra work is required to work with aiohttp's test utilities, but it
-is possible. It's necessary to patch an aiohttp function which creates the
-socket. Here is a minimal example of a test case.
+is possible. The example below requires at least aiohttp 3.8.0.
 
 ```python
 import async_solipsism
 import pytest
-from aiohttp import web
+from aiohttp import web, test_utils
 
 
 @pytest.fixture
-def loop(mocker):
-    mocker.patch(
-        "aiohttp.test_utils.get_port_socket",
-        lambda host, port: async_solipsism.ListenSocket((host, port if port else 80)),
-    )
+def event_loop():
     loop = async_solipsism.EventLoop()
     yield loop
     loop.close()
 
 
-async def test_integration(aiohttp_client):
+def socket_factory(host, port, family):
+    return async_solipsism.ListenSocket((host, port if port else 80))
+
+
+async def test_integration():
     app = web.Application()
-    client = await aiohttp_client(app)
-    resp = await client.post("/hey", json={})
-    assert resp.status == 404
+    async with test_utils.TestServer(app, socket_factory=socket_factory) as server:
+        async with test_utils.TestClient(server) as client:
+            resp = await client.post("/hey", json={})
+            assert resp.status == 404
 ```
 
-Note that the event loop fixture is called `loop`, and not `event_loop`, as
-that is what aiohttp's pytest plugin expects. If you need to run more than one
-test server concurrently, you'll need to extend the socket callback to assign
-them each a different port (async-solipsism does not currently handle mapping
-port 0 to an unused port).
+Note that this relies on pytest-asyncio (in auto mode) and does not use
+pytest-aiohttp. The fixtures provided by the latter do not support overriding
+the socket factory, although it may be possible to do by monkeypatching. In
+practice you will probably want to define your own fixtures for the client
+and server.
+
+If you need to run more than one test server concurrently, you'll need to
+extend the socket factory to assign them each a different port
+(async-solipsism does not currently handle mapping port 0 to an unused port).
 
 ## Limitations
 
