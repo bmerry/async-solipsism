@@ -196,3 +196,19 @@ async def test_sendfile(event_loop, tmp_path):
         await event_loop.sendfile(writer1.transport, f)
     line = await reader2.readline()
     assert line == b'Hello world\n'
+
+
+async def test_call_soon_threadsafe(event_loop):
+    future = event_loop.create_future()
+    event_loop.call_soon_threadsafe(future.set_result, 3)
+    result = await future
+    assert result == 3
+
+
+async def test_call_soon_threadsafe_wrong_thread(event_loop):
+    def thread_func():
+        event_loop.call_soon_threadsafe(lambda: None)
+
+    with concurrent.futures.ThreadPoolExecutor(1) as pool:
+        with pytest.raises(async_solipsism.SolipsismError):
+            pool.submit(thread_func).result()

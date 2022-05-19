@@ -145,8 +145,9 @@ imposes some restrictions. Other restrictions exist purely because I haven't
 gotten around to figuring out what a fake version should look like and
 implementing it. The following are all unsupported:
 
-- `call_soon_threadsafe` (it's fundamentally incompatible
-  with the fast-forward clock).
+- `call_soon_threadsafe`, except when called from the thread running the
+  event loop (it just forwards to `call_soon`). Multithreading is
+  fundamentally incompatible with the fast-forward clock.
 - `getaddrinfo` and `getnameinfo`
 - `connect_read_pipe` and `connect_write_pipe`
 - signal handlers

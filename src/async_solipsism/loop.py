@@ -1,4 +1,4 @@
-# Copyright 2020 Bruce Merry
+# Copyright 2020, 2022 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -18,6 +18,7 @@
 import asyncio
 import concurrent.futures
 import subprocess
+import threading
 
 from . import selector, socket as _socket
 from .exceptions import SolipsismError
@@ -39,6 +40,8 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         return self._selector.clock.time()
 
     def call_soon_threadsafe(self, callback, *args, context=None):
+        if self._thread_id == threading.get_ident():
+            return self.call_soon(callback, *args, context=context)
         raise SolipsismError("call_soon_threadsafe is not supported")
 
     async def run_in_executor(self, executor, func, *args):
