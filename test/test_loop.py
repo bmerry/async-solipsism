@@ -24,9 +24,6 @@ import pytest
 import async_solipsism
 
 
-pytestmark = [pytest.mark.asyncio]
-
-
 @pytest.fixture
 def event_loop():
     loop = async_solipsism.EventLoop()

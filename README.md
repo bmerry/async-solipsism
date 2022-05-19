@@ -167,6 +167,13 @@ Calling functions that are not supported will generally raise
 
 ## Changelog
 
+### 0.4
+
+- Allow `call_soon_threadsafe` from the same thread.
+- Don't warn when `SO_KEEPALIVE` is set on a socket.
+- Update instructions for use with aiohttp.
+- Add a pyproject.toml
+
 ### 0.3
 
 - Fix `start_server` with an explicit socket.
