@@ -118,9 +118,12 @@ class _SocketBase:
         if key not in {
             (socket.IPPROTO_TCP, socket.TCP_NODELAY),
             (socket.SOL_SOCKET, socket.SO_REUSEADDR),
-            (socket.SOL_SOCKET, socket.SO_REUSEPORT)
+            (socket.SOL_SOCKET, socket.SO_REUSEPORT),
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE)
         }:
-            warnings.warn(f'Ignoring socket option {level}:{optname}', SolipsismWarning)
+            warnings.warn(
+                f'Ignoring socket option {level}:{optname}', SolipsismWarning, stacklevel=2
+            )
         # TODO: implement SO_RCVBUF/SO_SNDBUF to change the queue capacity.
 
 
