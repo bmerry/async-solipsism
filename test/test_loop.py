@@ -166,6 +166,10 @@ async def test_unused_port(event_loop):
     server2 = await asyncio.start_server(callback, sock=listen_socket2)
     assert listen_socket1.getsockname()[1] == 60000
     assert listen_socket2.getsockname()[1] == 60001
+    server1.close()
+    server2.close()
+    await server1.wait_closed()
+    await server2.wait_closed()
 
 
 async def test_close_server(event_loop):
@@ -205,6 +209,10 @@ async def test_sendfile(event_loop, tmp_path):
         await event_loop.sendfile(writer1.transport, f)
     line = await reader2.readline()
     assert line == b'Hello world\n'
+    writer1.close()
+    writer2.close()
+    await writer1.wait_closed()
+    await writer2.wait_closed()
 
 
 async def test_call_soon_threadsafe(event_loop):
