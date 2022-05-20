@@ -1,4 +1,4 @@
-# Copyright 2020 Bruce Merry
+# Copyright 2020, 2022 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -154,6 +154,18 @@ async def test_server(event_loop, manual_socket):
     s_writer.close()
     server.close()
     await server.wait_closed()
+
+
+async def test_unused_port(event_loop):
+    def callback(reader, writer):
+        pass
+
+    listen_socket1 = async_solipsism.ListenSocket(('localhost', 0))
+    listen_socket2 = async_solipsism.ListenSocket(('localhost', 0))
+    server1 = await asyncio.start_server(callback, sock=listen_socket1)
+    server2 = await asyncio.start_server(callback, sock=listen_socket2)
+    assert listen_socket1.getsockname()[1] == 60000
+    assert listen_socket2.getsockname()[1] == 60001
 
 
 async def test_close_server(event_loop):

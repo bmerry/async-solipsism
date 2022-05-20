@@ -113,8 +113,14 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             # TODO: what if host is actually a list?
             addr = (host, port, 0, 0)
             sock = _socket.ListenSocket(addr)
-        else:
-            addr = sock.getsockname()
+        addr = sock.getsockname()
+        if addr[1] == 0:  # Port 0: pick a free port
+            addr_list = list(addr)
+            addr_list[1] = 60000
+            while tuple(addr_list) in self.__listening_sockets:
+                addr_list[1] += 1
+            addr = tuple(addr_list)
+            sock._sockname = addr
         if addr in self.__listening_sockets:
             raise SolipsismError("Reuse of listening addresses is not supported")
         self.__listening_sockets[addr] = sock

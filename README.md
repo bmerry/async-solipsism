@@ -84,6 +84,10 @@ The host and port are associated with the event loop, and are remembered until
 the server is closed. Attempting to connect after closing the server, or to an
 address that hasn't been registered, will raise a `ConnectionRefusedError`.
 
+If you don't want the bother of picking non-colliding ports, you can pass a
+port number of 0, and async-solipsism will bind the first port number above
+60000 that is unused.
+
 ### Integration with pytest-asyncio
 
 async-solipsism and pytest-asyncio complement each other well: just write a
@@ -117,7 +121,7 @@ def event_loop():
 
 
 def socket_factory(host, port, family):
-    return async_solipsism.ListenSocket((host, port if port else 80))
+    return async_solipsism.ListenSocket((host, port))
 
 
 async def test_integration():
@@ -133,10 +137,6 @@ pytest-aiohttp. The fixtures provided by the latter do not support overriding
 the socket factory, although it may be possible to do by monkeypatching. In
 practice you will probably want to define your own fixtures for the client
 and server.
-
-If you need to run more than one test server concurrently, you'll need to
-extend the socket factory to assign them each a different port
-(async-solipsism does not currently handle mapping port 0 to an unused port).
 
 ## Limitations
 
@@ -167,12 +167,16 @@ Calling functions that are not supported will generally raise
 
 ## Changelog
 
+### 0.5
+
+- Map port 0 to an unused port.
+
 ### 0.4
 
 - Allow `call_soon_threadsafe` from the same thread.
 - Don't warn when `SO_KEEPALIVE` is set on a socket.
 - Update instructions for use with aiohttp.
-- Add a pyproject.toml
+- Add a pyproject.toml.
 
 ### 0.3
 
