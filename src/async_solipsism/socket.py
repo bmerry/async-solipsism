@@ -1,4 +1,4 @@
-# Copyright 2020 Bruce Merry
+# Copyright 2020, 2024 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -30,6 +30,11 @@ DEFAULT_CAPACITY = 65536
 __all__ = ('Socket', 'ListenSocket', 'Queue', 'socketpair')
 
 
+def _view(bytes):
+    """Get a 1D byte-typed memoryview of an object implementing the buffer protocol."""
+    return memoryview(bytes).cast("B")
+
+
 class Queue:
     def __init__(self, capacity=None):
         self.capacity = capacity or DEFAULT_CAPACITY
@@ -50,11 +55,14 @@ class Queue:
             raise BrokenPipeError(errno.EPIPE, 'Broken pipe')
         if len(self) >= self.capacity:
             return None
-        n = len(data)
-        if len(self) + n > self.capacity:
-            n = self.capacity - len(self)
-            data = memoryview(data)[:n]
-        self._buffer += data
+        with _view(data) as view:
+            n = len(view)
+            if len(self) + n > self.capacity:
+                n = self.capacity - len(self)
+                with view[:n] as prefix:
+                    self._buffer += prefix
+            else:
+                self._buffer += view
         return n
 
     def read(self, size=-1):
@@ -68,7 +76,8 @@ class Queue:
             self._buffer = bytearray()
         else:
             n = min(size, len(self._buffer))
-            ret = bytes(memoryview(self._buffer))[:n]
+            with memoryview(self._buffer) as view, view[:n] as prefix:
+                ret = bytes(prefix)
             self._buffer = self._buffer[n:]
         return ret
 
@@ -164,11 +173,16 @@ class Socket(_SocketBase):
 
     def recv_into(self, buffer, nbytes=0, flags=0):
         # TODO: implement more efficiently?
-        if not nbytes:
-            nbytes = len(buffer)
-        data = self.recv(nbytes)
-        buffer[:len(data)] = data
-        return len(data)
+        with _view(buffer) as view:
+            if not nbytes:
+                nbytes = len(view)
+            if nbytes < 0:
+                raise ValueError("negative buffersize in recv_into")
+            if nbytes > len(view):
+                raise ValueError("buffer too small for requested bytes")
+            data = self.recv(nbytes)
+            view[:len(data)] = data
+            return len(data)
 
     def send(self, bytes, flags=0):
         self._check_closed()
