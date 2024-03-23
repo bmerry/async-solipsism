@@ -24,7 +24,7 @@ from . import selector, socket as _socket
 from .exceptions import SolipsismError
 
 
-__all__ = ('EventLoop', 'stream_pairs')
+__all__ = ('EventLoop', 'EventLoopPolicy', 'stream_pairs')
 
 
 class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
@@ -195,6 +195,11 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         addr = sock.getsockname()
         self.__listening_sockets.pop(addr)
         super()._stop_serving(sock)
+
+
+class EventLoopPolicy(asyncio.DefaultEventLoopPolicy):
+    def new_event_loop(self) -> EventLoop:
+        return EventLoop()
 
 
 async def stream_pairs(capacity=None):
