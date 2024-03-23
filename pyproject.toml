@@ -32,4 +32,4 @@ test = [
 
 [tool.setuptools.dynamic]
 version = {attr = "async_solipsism.__version__"}
-readme = {file = ["README.md"]}
+readme = {file = ["README.md"], content-type = "text/markdown"}
