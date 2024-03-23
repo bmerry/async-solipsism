@@ -8,5 +8,5 @@ repos:
     hooks:
       - id: pip-compile
         language_version: python3.8
-        args: ["--output-file=requirements.txt", "--extra=test", "--strip-extras", "setup.cfg"]
-        files: '^(?:setup\.cfg|requirements\.txt)$'
+        args: ["--output-file=requirements.txt", "--extra=test", "--strip-extras", "pyproject.toml"]
+        files: '^(?:pyproject\.toml|requirements\.txt)$'
