@@ -91,8 +91,17 @@ port number of 0, and async-solipsism will bind the first port number above
 ### Integration with pytest-asyncio
 
 async-solipsism and pytest-asyncio complement each other well: just write a
-custom `event_loop` fixture in your test file or `conftest.py` and it will
-override the default provided by pytest-asyncio:
+custom `event_loop_policy` fixture in your test file or `conftest.py` and it
+will override the default provided by pytest-asyncio:
+
+```python
+@pytest.fixture
+def event_loop_policy():
+    return async_solipsism.EventLoopPolicy()
+```
+
+The above is for pytest-asyncio 0.23+. If you're using an older version, then
+instead you should do this:
 
 ```python
 @pytest.fixture
@@ -114,10 +123,8 @@ from aiohttp import web, test_utils
 
 
 @pytest.fixture
-def event_loop():
-    loop = async_solipsism.EventLoop()
-    yield loop
-    loop.close()
+def event_loop_policy():
+    return async_solipsism.EventLoopPolicy()
 
 
 def socket_factory(host, port, family):
@@ -166,6 +173,21 @@ Calling functions that are not supported will generally raise
 `SolipsismError`.
 
 ## Changelog
+
+### 0.6
+
+- Drop support for Python 3.6 and 3.7, which have reached end of life.
+- Add `EventLoopPolicy` to simplify integration with pytest-asyncio 0.23+,
+  and use it for the internal tests.
+- Make `Socket.write` and `Socket.recv_into` accept arbitrary buffer-protocol
+  objects.
+- Various packaging and developer experience improvements:
+  - Put the packaging metadata in pyproject.toml, removing setup.cfg.
+  - Pin versions for CI in requirements.txt using pip-compile.
+  - Use pre-commit to enforce flake8 and pip-compile.
+  - Remove wheel from `build-system.requires` (on setuptools advice).
+  - Test against Python 3.11 and 3.12.
+  - Run CI workflow against pull requests.
 
 ### 0.5
 
