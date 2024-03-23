@@ -1,6 +1,6 @@
 # A solipsist event loop
 
-async-solipsism provide a Python asyncio event loop that does not interact with
+async-solipsism provides a Python asyncio event loop that does not interact with
 the outside world at all. This is ideal for writing unit tests that intend to
 mock out real-world interactions. It makes for tests that are reliable
 (unaffected by network outages), reproducible (not affected by random timing
