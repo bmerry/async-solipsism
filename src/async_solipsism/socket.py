@@ -102,7 +102,7 @@ class SocketFd:
         return hash(self.socket)
 
     def __eq__(self, other):
-        if type(other) == SocketFd:
+        if type(other) is SocketFd:
             return self.socket is other.socket
         return NotImplemented
 
