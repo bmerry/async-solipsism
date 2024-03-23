@@ -3,3 +3,10 @@ repos:
     rev: "7.0.0"
     hooks:
       - id: flake8
+  - repo: https://github.com/jazzband/pip-tools
+    rev: 7.4.1
+    hooks:
+      - id: pip-compile
+        language_version: python3.8
+        args: ["--output-file=requirements.txt", "--extra=test", "--strip-extras", "setup.cfg"]
+        files: '^(?:setup\.cfg|requirements\.txt)$'
