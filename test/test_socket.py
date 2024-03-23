@@ -1,4 +1,4 @@
-# Copyright 2020 Bruce Merry
+# Copyright 2020, 2024 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with async-solipsism.  If not, see <https://www.gnu.org/licenses/>.
 
+import array
 import socket
+import struct
 
 import pytest
 
@@ -69,3 +71,41 @@ def test_use_after_shutdown(end):
     assert sock0.recv(1) == b''
     with pytest.raises(BrokenPipeError):
         sock1.send(b'hello')
+
+
+def test_recv_into_array():
+    sock1, sock2 = async_solipsism.socketpair()
+    data = array.array("I", [1, 2, 3])
+    sock1.send(b"\xDE\xAD\xBE\xEF")
+    nbytes = sock2.recv_into(data)
+    assert nbytes == 4
+    assert data[0] == struct.unpack("I", b"\xDE\xAD\xBE\xEF")[0]
+    assert data[1] == 2
+    assert data[2] == 3
+
+
+def test_recv_into_array_partial():
+    sock1, sock2 = async_solipsism.socketpair()
+    data = array.array("I", [1, 2, 3])
+    sock1.send(b"\xDE\xAD\xBE\xEF\xCA\xFE")
+    nbytes = sock2.recv_into(data, 4)
+    assert nbytes == 4
+    assert data[0] == struct.unpack("I", b"\xDE\xAD\xBE\xEF")[0]
+    assert data[1] == 2
+    assert data[2] == 3
+
+
+def test_write_array():
+    sock1, sock2 = async_solipsism.socketpair(capacity=100)
+    data = array.array("I", range(64))
+    nbytes = sock1.send(data)
+    assert nbytes == 100
+    received = sock2.recv(-1)
+    assert len(received) == 100
+    assert memoryview(received) == memoryview(data).cast("B")[:100]
+
+
+@pytest.mark.parametrize("nbytes", [-1, 5])
+def test_recv_into_bad_nbytes(sock, nbytes):
+    with pytest.raises(ValueError):
+        sock.recv_into(bytearray(4), nbytes=nbytes)
