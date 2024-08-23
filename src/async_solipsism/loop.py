@@ -1,4 +1,4 @@
-# Copyright 2020, 2022 Bruce Merry
+# Copyright 2020, 2022, 2024 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -24,7 +24,7 @@ from . import selector, socket as _socket
 from .exceptions import SolipsismError
 
 
-__all__ = ('EventLoop', 'EventLoopPolicy', 'stream_pairs')
+__all__ = ('EventLoop', 'EventLoopPolicy', 'aiohappyeyeballs_start_connection', 'stream_pairs')
 
 
 class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
@@ -133,6 +133,27 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
             **kwargs
         )
 
+    async def aiohappyeyeballs_start_connection(self,
+                                                addr_infos,
+                                                *,
+                                                local_addr_infos=None,
+                                                happy_eyeballs_delay=None,
+                                                interleave=None):
+        for addr_info in addr_infos:
+            addr = addr_info[4]
+            addr = _socket._normalise_ipv6_sockaddr(addr)
+            if addr in self.__listening_sockets:
+                listener = self.__listening_sockets[addr]
+                if local_addr_infos:
+                    local_addr_info = local_addr_infos[0]
+                else:
+                    port = self.__next_port
+                    self.__next_port += 1
+                    local_addr_info = ('::1', port, 0, 0)
+                sock = await listener.make_connection(local_addr_info)
+                return sock
+        raise ConnectionRefusedError('No socket listening on requested addresses')
+
     async def connect_read_pipe(self, protocol_factory, pipe):
         raise SolipsismError("connect_read_pipe is not supported")
 
@@ -207,3 +228,17 @@ async def stream_pairs(capacity=None):
     streams1 = await asyncio.open_connection(sock=sock1)
     streams2 = await asyncio.open_connection(sock=sock2)
     return streams1, streams2
+
+
+async def aiohappyeyeballs_start_connection(addr_infos,
+                                            *,
+                                            local_addr_infos=None,
+                                            happy_eyeballs_delay=None,
+                                            interleave=None,
+                                            loop=None):
+    if loop is None:
+        loop = asyncio.get_running_loop()
+    return await loop.aiohappyeyeballs_start_connection(addr_infos,
+                                                        local_addr_infos=local_addr_infos,
+                                                        happy_eyeballs_delay=happy_eyeballs_delay,
+                                                        interleave=interleave)

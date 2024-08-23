@@ -120,7 +120,7 @@ class _SocketBase:
 
     def setblocking(self, flag):
         if flag:
-            raise SolipsismError('Socket only support non-blocking operation')
+            raise SolipsismError('Socket only supports non-blocking operation')
 
     def setsockopt(self, level, optname, value, optlen=None):
         key = (level, optname)

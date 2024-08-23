@@ -111,7 +111,14 @@ def event_loop():
     loop.close()
 ```
 
-### Integration with pytest-aiohttp
+### Integration with aiohappyeyeballs
+
+Unfortunately `aiohappyeyeballs.start_connection` doesn't work out of the box
+because it relies on creating a real socket. I've created a replacement
+`async_solipsism.aiohappyeyeballs_start_connection` that can be used to
+replace it. See the aiohttp section below for example code.
+
+### Integration with aiohttp
 
 A little extra work is required to work with aiohttp's test utilities, but it
 is possible. The example below requires at least aiohttp 3.8.0.
@@ -125,6 +132,12 @@ from aiohttp import web, test_utils
 @pytest.fixture
 def event_loop_policy():
     return async_solipsism.EventLoopPolicy()
+
+
+@pytest.fixture(autouse=True)
+def mock_start_connection(monkeypatch):
+    monkeypatch.setattr("aiohappyeyeballs.start_connection",
+                        async_solipsism.aiohappyeyeballs_start_connection)
 
 
 def socket_factory(host, port, family):
@@ -173,6 +186,10 @@ Calling functions that are not supported will generally raise
 `SolipsismError`.
 
 ## Changelog
+
+### 0.7
+
+- Add a replacement function for `aiohappyeyeballs.start_connection`.
 
 ### 0.6
 
