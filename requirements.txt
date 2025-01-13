@@ -25,21 +25,21 @@ platformdirs==4.2.0
 pluggy==1.4.0
     # via pytest
 pre-commit==3.5.0
-    # via async-solipsism (pyproject.toml)
+    # via -r requirements.in
 pytest==8.1.1
     # via
-    #   async-solipsism (pyproject.toml)
+    #   -r requirements.in
     #   pytest-asyncio
     #   pytest-mock
 pytest-asyncio==0.23.6
-    # via async-solipsism (pyproject.toml)
+    # via -r requirements.in
 pytest-mock==3.14.0
-    # via async-solipsism (pyproject.toml)
+    # via -r requirements.in
 pyyaml==6.0.1
     # via pre-commit
 tomli==2.0.1
     # via pytest
-virtualenv==20.25.1
+virtualenv==20.26.6
     # via pre-commit
 
 # The following packages are considered to be unsafe in a requirements file:
