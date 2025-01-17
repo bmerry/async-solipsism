@@ -6,41 +6,38 @@
 #
 cfgv==3.4.0
     # via pre-commit
-distlib==0.3.8
+distlib==0.3.9
     # via virtualenv
-exceptiongroup==1.2.0
+exceptiongroup==1.2.2
     # via pytest
-filelock==3.13.1
+filelock==3.16.1
     # via virtualenv
-identify==2.5.35
+identify==2.6.1
     # via pre-commit
 iniconfig==2.0.0
     # via pytest
-nodeenv==1.8.0
+nodeenv==1.9.1
     # via pre-commit
-packaging==24.0
+packaging==24.2
     # via pytest
-platformdirs==4.2.0
+platformdirs==4.3.6
     # via virtualenv
-pluggy==1.4.0
+pluggy==1.5.0
     # via pytest
 pre-commit==3.5.0
     # via async-solipsism (pyproject.toml)
-pytest==8.1.1
+pytest==8.3.4
     # via
     #   async-solipsism (pyproject.toml)
     #   pytest-asyncio
     #   pytest-mock
-pytest-asyncio==0.23.6
+pytest-asyncio==0.24.0
     # via async-solipsism (pyproject.toml)
 pytest-mock==3.14.0
     # via async-solipsism (pyproject.toml)
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via pre-commit
-tomli==2.0.1
+tomli==2.2.1
     # via pytest
-virtualenv==20.25.1
+virtualenv==20.29.0
     # via pre-commit
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
