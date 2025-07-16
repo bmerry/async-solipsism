@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bruce Merry
+# Copyright 2020, 2024-2025 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -216,6 +216,9 @@ class ListenSocket(_SocketBase):
 
     def getsockname(self):
         return self._sockname
+
+    def getpeername(self):
+        raise OSError(errno.ENOTCONN, "Transport endpoint is not connected")
 
     def listen(self, backlog=None):
         pass
