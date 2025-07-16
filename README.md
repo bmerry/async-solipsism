@@ -187,6 +187,12 @@ Calling functions that are not supported will generally raise
 
 ## Changelog
 
+### 0.8
+
+- Support `socket.sendmsg`.
+- Support `socket.getpeername` for listening sockets (raises OSError).
+- Make `EventLoop.time` work even after the event loop is closed.
+
 ### 0.7
 
 - Add a replacement function for `aiohappyeyeballs.start_connection`.
