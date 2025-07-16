@@ -30,14 +30,16 @@ __all__ = ('EventLoop', 'EventLoopPolicy', 'aiohappyeyeballs_start_connection', 
 class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
     def __init__(self):
         super().__init__(selector=selector.Selector())
-        self._selector = selector.Selector()
         self._clock_resolution = self._selector.clock.resolution
         # Map from (host, port) pair to ListenSocket
         self.__listening_sockets = {}
         self.__next_port = 1
+        # Copy this so that time() works even when after the event loop is
+        # closed (which clears _selector).
+        self.__clock = self._selector.clock
 
     def time(self):
-        return self._selector.clock.time()
+        return self.__clock.time()
 
     def call_soon_threadsafe(self, callback, *args, context=None):
         if self._thread_id == threading.get_ident():
