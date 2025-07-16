@@ -188,6 +188,14 @@ class Socket(_SocketBase):
         self._check_closed()
         return self._write_queue.write(bytes)
 
+    def sendmsg(self, buffers, ancdata=None, flags=0, address=None, /):
+        self._check_closed()
+        if ancdata is not None:
+            raise SolipsismError('ancilliary data is not supported in sendmsg')
+        if address is not None:
+            raise SolipsismError('address is not supported in sendmsg')
+        return self._write_queue.write(b"".join(buffers))
+
     def read_ready(self):
         return self._read_queue is None or self._read_queue.read_ready()
 
