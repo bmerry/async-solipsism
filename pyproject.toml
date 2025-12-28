@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "async-solipsism"
-dynamic = ["version", "readme"]
+dynamic = ["version"]
+readme = "README.md"
 description = "Asyncio event loop that doesn't interact with the outside world"
 authors = [
     {name = "Bruce Merry", email = "bmerry@gmail.com"}
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: AsyncIO",
@@ -24,7 +25,7 @@ Homepage = "https://github.com/bmerry/async-solipsism"
 test = [
     "pre-commit",
     "pytest",
-    "pytest-asyncio>=0.23",
+    "pytest-asyncio>=0.23,<1.0",
     "pytest-mock",
 ]
 
@@ -32,4 +33,6 @@ test = [
 
 [tool.setuptools.dynamic]
 version = {attr = "async_solipsism.__version__"}
-readme = {file = ["README.md"], content-type = "text/markdown"}
+
+[tool.ruff]
+line-length = 120
