@@ -219,6 +219,17 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         self.__listening_sockets.pop(addr)
         super()._stop_serving(sock)
 
+    async def shutdown_default_executor(self, timeout=None):
+        # The default implementation uses an asyncio timeout, which
+        # would complete immediately without giving the executor
+        # time to shut down. We ignore the timeout and just shut
+        # things down synchronously. This is based on the code in
+        # CPython.
+        self._executor_shutdown_called = True
+        if self._default_executor is None:
+            return
+        self._default_executor.shutdown(wait=True)
+
 
 class EventLoopPolicy(asyncio.DefaultEventLoopPolicy):
     def new_event_loop(self) -> EventLoop:

@@ -23,9 +23,10 @@ Homepage = "https://github.com/bmerry/async-solipsism"
 
 [project.optional-dependencies]
 test = [
+    "backports.asyncio.runner; python_version<'3.11'",
     "pre-commit",
     "pytest",
-    "pytest-asyncio>=0.23,<1.0",
+    "pytest-asyncio>=0.23",
     "pytest-mock",
 ]
 

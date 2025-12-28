@@ -17,7 +17,12 @@
 
 import asyncio
 import concurrent.futures
+import sys
 import threading
+if sys.version_info < (3, 11):
+    from backports.asyncio.runner import Runner
+else:
+    from asyncio import Runner
 
 import pytest
 
@@ -36,12 +41,13 @@ async def test_sleep():
     assert event_loop.time() == 2.0
 
 
-def test_sleep_forever(event_loop):
+def test_sleep_forever():
     async def zzz():
         await asyncio.Future()
 
-    with pytest.raises(async_solipsism.SleepForeverError):
-        event_loop.run_until_complete(zzz())
+    with Runner(loop_factory=async_solipsism.EventLoop) as runner:
+        with pytest.raises(async_solipsism.SleepForeverError):
+            runner.run(zzz())
 
 
 @pytest.mark.parametrize(
