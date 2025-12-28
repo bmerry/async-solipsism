@@ -3,10 +3,9 @@ repos:
     rev: "7.1.1"
     hooks:
       - id: flake8
-  - repo: https://github.com/jazzband/pip-tools
-    rev: 7.4.1
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.18
     hooks:
       - id: pip-compile
-        language_version: python3.8
-        args: ["--output-file=requirements.txt", "--extra=test", "--strip-extras", "pyproject.toml"]
+        args: ["--python-version=3.8", "--output-file=requirements.txt", "--extra=test", "pyproject.toml"]
         files: '^(?:pyproject\.toml|requirements\.txt)$'
