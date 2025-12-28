@@ -187,6 +187,14 @@ Calling functions that are not supported will generally raise
 
 ## Changelog
 
+### 0.9
+
+- Drop support for end-of-life Python 3.8 and 3.9.
+- Update versions of dependencies used for testing.
+- Make tests work on latest pytest-asyncio.
+- Replace flake8 with ruff for linting.
+- Replace pip-tools with uv for generating requirements files.
+
 ### 0.8
 
 - Support `socket.sendmsg`.
