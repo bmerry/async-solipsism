@@ -1,4 +1,4 @@
-# Copyright 2020, 2022 Bruce Merry
+# Copyright 2020, 2022, 2025 Bruce Merry
 #
 # This file is part of async-solipsism.
 #
@@ -48,7 +48,7 @@ def test_sleep_forever(event_loop):
     'method',
     [
         'recv',
-        pytest.param('recv_into', marks=pytest.mark.skipif("sys.version_info < (3, 7)"))
+        'recv_into'
     ]
 )
 @pytest.mark.parametrize('delay', [False, True])
@@ -210,7 +210,6 @@ async def test_run_in_executor_explicit():
     my_executor.shutdown()
 
 
-@pytest.mark.skipif("sys.version_info < (3, 7)")
 async def test_sendfile(tmp_path):
     event_loop = asyncio.get_running_loop()
     tmp_file = tmp_path / 'test_sendfile.txt'
