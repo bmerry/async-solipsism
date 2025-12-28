@@ -45,7 +45,12 @@ def test_sleep_forever():
     async def zzz():
         await asyncio.Future()
 
-    with Runner(loop_factory=async_solipsism.EventLoop) as runner:
+    def factory():
+        loop = async_solipsism.EventLoop()
+        asyncio.set_event_loop(loop)
+        return loop
+
+    with Runner(loop_factory=factory) as runner:
         with pytest.raises(async_solipsism.SleepForeverError):
             runner.run(zzz())
 
