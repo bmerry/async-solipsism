@@ -1,10 +1,10 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.10
+    rev: v0.15.11
     hooks:
       - id: ruff-check
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.18
+    rev: 0.11.7
     hooks:
       - id: pip-compile
         args: ["--python-version=3.10", "--universal", "--output-file=requirements.txt", "--extra=test", "pyproject.toml"]
