@@ -140,7 +140,8 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
                                                 *,
                                                 local_addr_infos=None,
                                                 happy_eyeballs_delay=None,
-                                                interleave=None):
+                                                interleave=None,
+                                                socket_factory=None):
         for addr_info in addr_infos:
             addr = addr_info[4]
             addr = _socket._normalise_ipv6_sockaddr(addr)
@@ -248,10 +249,12 @@ async def aiohappyeyeballs_start_connection(addr_infos,
                                             local_addr_infos=None,
                                             happy_eyeballs_delay=None,
                                             interleave=None,
-                                            loop=None):
+                                            loop=None,
+                                            socket_factory=None):
     if loop is None:
         loop = asyncio.get_running_loop()
     return await loop.aiohappyeyeballs_start_connection(addr_infos,
                                                         local_addr_infos=local_addr_infos,
                                                         happy_eyeballs_delay=happy_eyeballs_delay,
-                                                        interleave=interleave)
+                                                        interleave=interleave,
+                                                        socket_factory=socket_factory)
