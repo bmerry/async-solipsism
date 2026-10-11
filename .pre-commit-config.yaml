@@ -7,5 +7,5 @@ repos:
     rev: 0.13.0
     hooks:
       - id: pip-compile
-        args: ["--python-version=3.10", "--universal", "--output-file=requirements.txt", "--extra=test", "pyproject.toml"]
+        args: ["--python-version=3.11", "--universal", "--output-file=requirements.txt", "--group=test", "pyproject.toml"]
         files: '^(?:pyproject\.toml|requirements\.txt)$'

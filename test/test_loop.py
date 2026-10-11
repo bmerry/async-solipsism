@@ -17,21 +17,11 @@
 
 import asyncio
 import concurrent.futures
-import sys
 import threading
-if sys.version_info < (3, 11):
-    from backports.asyncio.runner import Runner
-else:
-    from asyncio import Runner
 
 import pytest
 
 import async_solipsism
-
-
-@pytest.fixture
-def event_loop_policy():
-    return async_solipsism.EventLoopPolicy()
 
 
 async def test_sleep():
@@ -50,7 +40,7 @@ def test_sleep_forever():
         asyncio.set_event_loop(loop)
         return loop
 
-    with Runner(loop_factory=factory) as runner:
+    with asyncio.Runner(loop_factory=factory) as runner:
         with pytest.raises(async_solipsism.SleepForeverError):
             runner.run(zzz())
 
@@ -116,7 +106,7 @@ async def test_sock_sendall(size):
 async def test_connect_existing(mocker):
     event_loop = asyncio.get_running_loop()
     sock1, sock2 = async_solipsism.socketpair()
-    transport1, protocol1 = await event_loop.connect_accepted_socket(
+    transport1, _ = await event_loop.connect_accepted_socket(
         mocker.MagicMock, sock1)
     transport2, protocol2 = await event_loop.create_connection(
         mocker.MagicMock, sock=sock2)
@@ -134,7 +124,7 @@ async def test_connect_existing(mocker):
 
 
 async def test_stream():
-    ((reader1, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
+    ((_, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
     writer1.write(b'Hello world\n')
     data = await reader2.readline()
     assert data == b'Hello world\n'
