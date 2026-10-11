@@ -90,9 +90,26 @@ port number of 0, and async-solipsism will bind the first port number above
 
 ### Integration with pytest-asyncio
 
-async-solipsism and pytest-asyncio complement each other well: just write a
-custom `event_loop_policy` fixture in your test file or `conftest.py` and it
-will override the default provided by pytest-asyncio:
+async-solipsism and pytest-asyncio complement each other well. The mechanism
+for integrating it depends on the version of pytest-asyncio.
+
+#### 1.4.0 or later
+
+Add a hook in conftest.py to override the event loop factory. This can be done
+in a subdirectory to use async-solipsism only for that subdirectory.
+
+```python
+def pytest_asyncio_loop_factories(config, item):
+    return {"async_solipsism": async_solipsism.EventLoop}
+```
+
+If you need finer-grained control, see [How to configure event loop factories
+from the test item](https://pytest-asyncio.readthedocs.io/en/stable/how-to-guides/configure_loop_factories_per_test.html).
+
+#### 0.23 to 1.3
+
+Write a custom `event_loop_policy` fixture in your test file or `conftest.py`
+and it will override the default provided by pytest-asyncio:
 
 ```python
 @pytest.fixture
@@ -100,8 +117,7 @@ def event_loop_policy():
     return async_solipsism.EventLoopPolicy()
 ```
 
-The above is for pytest-asyncio 0.23+. If you're using an older version, then
-instead you should do this:
+#### 0.22 or older
 
 ```python
 @pytest.fixture
