@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80", "setuptools-scm[simple]>=9.2"]
+requires = ["setuptools>=80", "setuptools-scm>=9.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -28,8 +28,6 @@ test = [
     "pytest-asyncio>=1.4.0",
     "pytest-mock",
 ]
-
-[tool.setuptools_scm]
 
 [tool.setuptools.dynamic]
 version = {attr = "async_solipsism.__version__"}
