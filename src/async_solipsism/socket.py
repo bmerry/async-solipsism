@@ -238,7 +238,7 @@ class ListenSocket(_SocketBase):
         return bool(self._queue)
 
     def close(self):
-        for waiter, peername in self._queue:
+        for waiter, _ in self._queue:
             if not waiter.done():
                 waiter.set_exception(ConnectionResetError("Remote socket was closed"))
         self._queue = None
