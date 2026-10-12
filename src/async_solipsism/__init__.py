@@ -21,9 +21,9 @@ import warnings
 from typing import TYPE_CHECKING
 
 from .exceptions import *  # noqa
-from .socket import *      # noqa
-from .loop import *        # noqa
+from .loop import *  # noqa
 from .loop import EventLoop  # redundant, but keeps static analysis happy
+from .socket import *  # noqa
 
 __all__ = exceptions.__all__ + socket.__all__ + loop.__all__  # noqa
 __version__ = '0.9'

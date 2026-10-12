@@ -19,7 +19,6 @@ import warnings
 
 from . import exceptions
 
-
 __all__ = ('Clock',)
 
 

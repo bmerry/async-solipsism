@@ -20,9 +20,9 @@ import concurrent.futures
 import subprocess
 import threading
 
-from . import selector, socket as _socket
+from . import selector
+from . import socket as _socket
 from .exceptions import SolipsismError
-
 
 __all__ = ('EventLoop', 'aiohappyeyeballs_start_connection', 'stream_pairs')
 

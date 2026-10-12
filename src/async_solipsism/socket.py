@@ -18,11 +18,10 @@
 import asyncio
 import errno
 import socket
-from collections import deque
 import warnings
+from collections import deque
 
-from .exceptions import SolipsismWarning, SolipsismError
-
+from .exceptions import SolipsismError, SolipsismWarning
 
 DEFAULT_CAPACITY = 65536
 

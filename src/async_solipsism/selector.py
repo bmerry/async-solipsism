@@ -19,9 +19,8 @@ import asyncio.base_events
 import selectors
 
 from . import socket
-from .exceptions import SolipsismError, SleepForeverError
 from .clock import Clock
-
+from .exceptions import SleepForeverError, SolipsismError
 
 __all__ = ('Selector',)
 
