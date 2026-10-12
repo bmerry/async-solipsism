@@ -45,39 +45,33 @@ def test_sleep_forever():
             runner.run(zzz())
 
 
-@pytest.mark.parametrize(
-    'method',
-    [
-        'recv',
-        'recv_into'
-    ]
-)
-@pytest.mark.parametrize('delay', [False, True])
+@pytest.mark.parametrize("method", ["recv", "recv_into"])
+@pytest.mark.parametrize("delay", [False, True])
 async def test_delayed_sock_recv(method, delay):
     event_loop = asyncio.get_running_loop()
 
     async def delayed_write(wsock):
         await asyncio.sleep(1)
-        wsock.send(b'Hello')
+        wsock.send(b"Hello")
 
     rsock, wsock = async_solipsism.socketpair()
     task = event_loop.create_task(delayed_write(wsock))
     if not delay:
         await task
-    if method == 'recv':
+    if method == "recv":
         data = await event_loop.sock_recv(rsock, 10)
     else:
         data = bytearray(10)
         n = await event_loop.sock_recv_into(rsock, data)
         data = data[:n]
-    assert data == b'Hello'
+    assert data == b"Hello"
     assert event_loop.time() == 1.0
     rsock.close()
     wsock.close()
     await task
 
 
-@pytest.mark.parametrize('size', [10, 10**7])
+@pytest.mark.parametrize("size", [10, 10**7])
 async def test_sock_sendall(size):
     event_loop = asyncio.get_running_loop()
 
@@ -91,13 +85,13 @@ async def test_sock_sendall(size):
             else:
                 if not data:
                     break
-                assert data == b'?' * len(data)
+                assert data == b"?" * len(data)
                 n += len(data)
         return n
 
     rsock, wsock = async_solipsism.socketpair()
     task = event_loop.create_task(delayed_read(rsock))
-    await event_loop.sock_sendall(wsock, b'?' * size)
+    await event_loop.sock_sendall(wsock, b"?" * size)
     wsock.close()
     n = await task
     assert n == size
@@ -106,33 +100,31 @@ async def test_sock_sendall(size):
 async def test_connect_existing(mocker):
     event_loop = asyncio.get_running_loop()
     sock1, sock2 = async_solipsism.socketpair()
-    transport1, _ = await event_loop.connect_accepted_socket(
-        mocker.MagicMock, sock1)
-    transport2, protocol2 = await event_loop.create_connection(
-        mocker.MagicMock, sock=sock2)
-    transport1.write(b'Hello world\n')
+    transport1, _ = await event_loop.connect_accepted_socket(mocker.MagicMock, sock1)
+    transport2, protocol2 = await event_loop.create_connection(mocker.MagicMock, sock=sock2)
+    transport1.write(b"Hello world\n")
     transport1.write_eof()
     transport1.close()
     protocol2.eof_received.return_value = None
     await asyncio.sleep(1)
     assert protocol2.method_calls == [
         mocker.call.connection_made(transport2),
-        mocker.call.data_received(b'Hello world\n'),
+        mocker.call.data_received(b"Hello world\n"),
         mocker.call.eof_received(),
-        mocker.call.connection_lost(None)
+        mocker.call.connection_lost(None),
     ]
 
 
 async def test_stream():
     ((_, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
-    writer1.write(b'Hello world\n')
+    writer1.write(b"Hello world\n")
     data = await reader2.readline()
-    assert data == b'Hello world\n'
+    assert data == b"Hello world\n"
     writer1.close()
     writer2.close()
 
 
-@pytest.mark.parametrize('manual_socket', [False, True])
+@pytest.mark.parametrize("manual_socket", [False, True])
 async def test_server(manual_socket):
     event_loop = asyncio.get_running_loop()
 
@@ -141,22 +133,22 @@ async def test_server(manual_socket):
 
     server_conn = event_loop.create_future()
     if manual_socket:
-        listen_socket = async_solipsism.ListenSocket(('test.invalid', 1234))
+        listen_socket = async_solipsism.ListenSocket(("test.invalid", 1234))
         server = await asyncio.start_server(callback, sock=listen_socket)
     else:
-        server = await asyncio.start_server(callback, 'test.invalid', 1234)
-    c_reader, c_writer = await asyncio.open_connection('test.invalid', 1234)
+        server = await asyncio.start_server(callback, "test.invalid", 1234)
+    c_reader, c_writer = await asyncio.open_connection("test.invalid", 1234)
     s_reader, s_writer = await server_conn
-    c_socket = c_writer.get_extra_info('socket')
-    s_socket = s_writer.get_extra_info('socket')
-    assert c_socket.getpeername() == s_socket.getsockname() == ('test.invalid', 1234, 0, 0)
-    assert s_socket.getpeername() == c_socket.getsockname() == ('::1', 1, 0, 0)
+    c_socket = c_writer.get_extra_info("socket")
+    s_socket = s_writer.get_extra_info("socket")
+    assert c_socket.getpeername() == s_socket.getsockname() == ("test.invalid", 1234, 0, 0)
+    assert s_socket.getpeername() == c_socket.getsockname() == ("::1", 1, 0, 0)
 
-    c_writer.write(b'Hello world\n')
-    assert await s_reader.readline() == b'Hello world\n'
+    c_writer.write(b"Hello world\n")
+    assert await s_reader.readline() == b"Hello world\n"
 
-    s_writer.write(b'Testing\n')
-    assert await c_reader.readline() == b'Testing\n'
+    s_writer.write(b"Testing\n")
+    assert await c_reader.readline() == b"Testing\n"
     c_writer.close()
     s_writer.close()
     server.close()
@@ -167,8 +159,8 @@ async def test_unused_port():
     def callback(reader, writer):
         pass
 
-    listen_socket1 = async_solipsism.ListenSocket(('localhost', 0))
-    listen_socket2 = async_solipsism.ListenSocket(('localhost', 0))
+    listen_socket1 = async_solipsism.ListenSocket(("localhost", 0))
+    listen_socket2 = async_solipsism.ListenSocket(("localhost", 0))
     server1 = await asyncio.start_server(callback, sock=listen_socket1)
     server2 = await asyncio.start_server(callback, sock=listen_socket2)
     assert listen_socket1.getsockname()[1] == 60000
@@ -181,17 +173,17 @@ async def test_unused_port():
 
 async def test_close_server():
     event_loop = asyncio.get_running_loop()
-    server = await asyncio.start_server(lambda reader, writer: None, 'test.invalid', 1234)
+    server = await asyncio.start_server(lambda reader, writer: None, "test.invalid", 1234)
     server.close()
     await server.wait_closed()
     with pytest.raises(ConnectionRefusedError):
-        await event_loop.create_connection('test.invalid', 1234)
+        await event_loop.create_connection("test.invalid", 1234)
 
 
 async def test_create_connection_no_listener():
     event_loop = asyncio.get_running_loop()
     with pytest.raises(ConnectionRefusedError):
-        await event_loop.create_connection('test.invalid', 1234)
+        await event_loop.create_connection("test.invalid", 1234)
 
 
 async def test_run_in_executor_implicit():
@@ -213,13 +205,13 @@ async def test_run_in_executor_explicit():
 
 async def test_sendfile(tmp_path):
     event_loop = asyncio.get_running_loop()
-    tmp_file = tmp_path / 'test_sendfile.txt'
-    tmp_file.write_bytes(b'Hello world\n')
+    tmp_file = tmp_path / "test_sendfile.txt"
+    tmp_file.write_bytes(b"Hello world\n")
     ((_, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
-    with open(tmp_file, 'rb') as f:
+    with open(tmp_file, "rb") as f:
         await event_loop.sendfile(writer1.transport, f)
     line = await reader2.readline()
-    assert line == b'Hello world\n'
+    assert line == b"Hello world\n"
     writer1.close()
     writer2.close()
     await writer1.wait_closed()

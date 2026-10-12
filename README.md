@@ -72,8 +72,8 @@ connecting to them. You can supply any host name and port, even if they're not
 actually associated with the machine! For example,
 
 ```python
-server = await asyncio.start_server(callback, 'test.invalid', 1234)
-reader, writer = await asyncio.open_connection('test.invalid', 1234)
+server = await asyncio.start_server(callback, "test.invalid", 1234)
+reader, writer = await asyncio.open_connection("test.invalid", 1234)
 ```
 
 will start a server, then open a client connection to it. The `reader` and
@@ -157,8 +157,9 @@ def event_loop_policy():
 
 @pytest.fixture(autouse=True)
 def mock_start_connection(monkeypatch):
-    monkeypatch.setattr("aiohappyeyeballs.start_connection",
-                        async_solipsism.aiohappyeyeballs_start_connection)
+    monkeypatch.setattr(
+        "aiohappyeyeballs.start_connection", async_solipsism.aiohappyeyeballs_start_connection
+    )
 
 
 def socket_factory(host, port, family):

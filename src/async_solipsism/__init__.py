@@ -26,7 +26,7 @@ from .loop import EventLoop  # redundant, but keeps static analysis happy
 from .socket import *  # noqa
 
 __all__ = exceptions.__all__ + socket.__all__ + loop.__all__  # noqa
-__version__ = '0.9'
+__version__ = "0.9"
 
 if sys.version_info < (3, 16, 0):
     # asyncio.DefaultEventLoopPolicy is deprecated, so we have to jump through
@@ -34,18 +34,25 @@ if sys.version_info < (3, 16, 0):
     __all__ += ("EventLoopPolicy",)
 
     if TYPE_CHECKING:
+
         class EventLoopPolicy(asyncio.DefaultEventLoopPolicy):
             def new_event_loop(self) -> EventLoop: ...
     else:
+
         def __getattr__(name):
             global EventLoopPolicy
 
             match name:
                 case "EventLoopPolicy":
+
                     class EventLoopPolicy(asyncio.DefaultEventLoopPolicy):
                         def new_event_loop(self):
                             return EventLoop()
 
-                    warnings.warn("async_solipsism.EventLoopPolicy is deprecated", DeprecationWarning, stacklevel=2)
+                    warnings.warn(
+                        "async_solipsism.EventLoopPolicy is deprecated",
+                        DeprecationWarning,
+                        stacklevel=2,
+                    )
                     return EventLoopPolicy
             raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

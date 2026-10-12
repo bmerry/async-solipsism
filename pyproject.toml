@@ -35,7 +35,7 @@ test = [
 version = {attr = "async_solipsism.__version__"}
 
 [tool.ruff]
-line-length = 120
+line-length = 100
 
 [tool.ruff.lint]
 extend-select = ["E", "F", "I", "N", "W", "UP"]

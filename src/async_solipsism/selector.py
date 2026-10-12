@@ -22,7 +22,7 @@ from . import socket
 from .clock import Clock
 from .exceptions import SleepForeverError, SolipsismError
 
-__all__ = ('Selector',)
+__all__ = ("Selector",)
 
 
 class Selector(selectors._BaseSelectorImpl):
@@ -38,7 +38,7 @@ class Selector(selectors._BaseSelectorImpl):
         elif isinstance(fileobj, socket.SocketFd):
             return fileobj
         else:
-            raise SolipsismError('Only instances of Socket or SocketFd can be registered')
+            raise SolipsismError("Only instances of Socket or SocketFd can be registered")
 
     def select(self, timeout=None):
         self._check_closed()
@@ -54,7 +54,7 @@ class Selector(selectors._BaseSelectorImpl):
         if ready:
             return ready
         elif timeout is None or timeout >= asyncio.base_events.MAXIMUM_SELECT_TIMEOUT:
-            raise SleepForeverError('select with no timeout and no ready events')
+            raise SleepForeverError("select with no timeout and no ready events")
         elif timeout > 0:
             self.clock.advance(timeout)
         return []
@@ -65,4 +65,4 @@ class Selector(selectors._BaseSelectorImpl):
 
     def _check_closed(self):
         if self._closed:
-            raise RuntimeError('Selector is closed')
+            raise RuntimeError("Selector is closed")

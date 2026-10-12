@@ -26,7 +26,7 @@ from .exceptions import SolipsismError, SolipsismWarning
 DEFAULT_CAPACITY = 65536
 
 
-__all__ = ('ListenSocket', 'Queue', 'Socket', 'socketpair')
+__all__ = ("ListenSocket", "Queue", "Socket", "socketpair")
 
 
 def _view(bytes):
@@ -51,7 +51,7 @@ class Queue:
 
     def write(self, data):
         if self._eof:
-            raise BrokenPipeError(errno.EPIPE, 'Broken pipe')
+            raise BrokenPipeError(errno.EPIPE, "Broken pipe")
         if len(self) >= self.capacity:
             return None
         with _view(data) as view:
@@ -67,7 +67,7 @@ class Queue:
     def read(self, size=-1):
         if not self._buffer:
             if self._eof:
-                return b''
+                return b""
             else:
                 raise BlockingIOError
         elif size < 0:
@@ -119,7 +119,7 @@ class _SocketBase:
 
     def setblocking(self, flag):
         if flag:
-            raise SolipsismError('Socket only supports non-blocking operation')
+            raise SolipsismError("Socket only supports non-blocking operation")
 
     def setsockopt(self, level, optname, value, optlen=None):
         key = (level, optname)
@@ -127,10 +127,10 @@ class _SocketBase:
             (socket.IPPROTO_TCP, socket.TCP_NODELAY),
             (socket.SOL_SOCKET, socket.SO_REUSEADDR),
             (socket.SOL_SOCKET, socket.SO_REUSEPORT),
-            (socket.SOL_SOCKET, socket.SO_KEEPALIVE)
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE),
         }:
             warnings.warn(
-                f'Ignoring socket option {level}:{optname}', SolipsismWarning, stacklevel=2
+                f"Ignoring socket option {level}:{optname}", SolipsismWarning, stacklevel=2
             )
         # TODO: implement SO_RCVBUF/SO_SNDBUF to change the queue capacity.
 
@@ -138,10 +138,10 @@ class _SocketBase:
 def _normalise_ipv6_sockaddr(addr):
     """Convert a socket address to a :meth:`socket.socket.getsockname` result for IPv6."""
     if addr is None:
-        return ('::', 0, 0, 0)
+        return ("::", 0, 0, 0)
     # The flow-id and scope are optional
     if not isinstance(addr, tuple) or len(addr) < 2 or len(addr) > 4:
-        raise TypeError('AF_INET6 address must be a tuple (host, port[, flowinfo[, scopeid]])')
+        raise TypeError("AF_INET6 address must be a tuple (host, port[, flowinfo[, scopeid]])")
     return addr + (0,) * (4 - len(addr))
 
 
@@ -156,7 +156,7 @@ class Socket(_SocketBase):
 
     def _check_closed(self):
         if self._read_queue is None or self._write_queue is None:
-            raise OSError(errno.EBADF, 'Bad file descriptor')
+            raise OSError(errno.EBADF, "Bad file descriptor")
 
     def getsockname(self):
         self._check_closed()
@@ -180,7 +180,7 @@ class Socket(_SocketBase):
             if nbytes > len(view):
                 raise ValueError("buffer too small for requested bytes")
             data = self.recv(nbytes)
-            view[:len(data)] = data
+            view[: len(data)] = data
             return len(data)
 
     def send(self, bytes, flags=0):
@@ -190,9 +190,9 @@ class Socket(_SocketBase):
     def sendmsg(self, buffers, ancdata=None, flags=0, address=None, /):
         self._check_closed()
         if ancdata is not None:
-            raise SolipsismError('ancilliary data is not supported in sendmsg')
+            raise SolipsismError("ancilliary data is not supported in sendmsg")
         if address is not None:
-            raise SolipsismError('address is not supported in sendmsg')
+            raise SolipsismError("address is not supported in sendmsg")
         return self._write_queue.write(b"".join(buffers))
 
     def read_ready(self):
@@ -245,7 +245,7 @@ class ListenSocket(_SocketBase):
 
     def accept(self):
         if self._queue is None:
-            raise RuntimeError('Socket is already closed')
+            raise RuntimeError("Socket is already closed")
         while self._queue and self._queue[0][0].done():
             self._queue.popleft()
         if not self._queue:

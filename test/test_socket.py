@@ -43,43 +43,43 @@ def test_setsockopt_unknown(sock, caplog):
     try:
         opt = socket.IP_MULTICAST_LOOP
     except AttributeError:
-        pytest.skip('IP_MULTICAST_LOOP not defined')
-    with pytest.warns(async_solipsism.SolipsismWarning, match='Ignoring socket option'):
+        pytest.skip("IP_MULTICAST_LOOP not defined")
+    with pytest.warns(async_solipsism.SolipsismWarning, match="Ignoring socket option"):
         sock.setsockopt(socket.IPPROTO_IP, opt, 1)
 
 
 @pytest.mark.parametrize(
-    'given, expected',
+    "given, expected",
     [
-        (None, ('::', 0, 0, 0)),
-        (('fe80::', 1234), ('fe80::', 1234, 0, 0)),
-        (('fe80::', 1, 2, 3), ('fe80::', 1, 2, 3))
-    ]
+        (None, ("::", 0, 0, 0)),
+        (("fe80::", 1234), ("fe80::", 1234, 0, 0)),
+        (("fe80::", 1, 2, 3), ("fe80::", 1, 2, 3)),
+    ],
 )
 def test_sockaddr(given, expected):
     sock = async_solipsism.socketpair(sock1_name=given)[0]
     assert sock.getsockname() == expected
 
 
-@pytest.mark.parametrize('end', ['read', 'write'])
+@pytest.mark.parametrize("end", ["read", "write"])
 def test_use_after_shutdown(end):
     sock0, sock1 = async_solipsism.socketpair()
-    if end == 'read':
+    if end == "read":
         sock0.shutdown(socket.SHUT_RD)
     else:
         sock1.shutdown(socket.SHUT_WR)
-    assert sock0.recv(1) == b''
+    assert sock0.recv(1) == b""
     with pytest.raises(BrokenPipeError):
-        sock1.send(b'hello')
+        sock1.send(b"hello")
 
 
 def test_recv_into_array():
     sock1, sock2 = async_solipsism.socketpair()
     data = array.array("I", [1, 2, 3])
-    sock1.send(b"\xDE\xAD\xBE\xEF")
+    sock1.send(b"\xde\xad\xbe\xef")
     nbytes = sock2.recv_into(data)
     assert nbytes == 4
-    assert data[0] == struct.unpack("I", b"\xDE\xAD\xBE\xEF")[0]
+    assert data[0] == struct.unpack("I", b"\xde\xad\xbe\xef")[0]
     assert data[1] == 2
     assert data[2] == 3
 
@@ -87,10 +87,10 @@ def test_recv_into_array():
 def test_recv_into_array_partial():
     sock1, sock2 = async_solipsism.socketpair()
     data = array.array("I", [1, 2, 3])
-    sock1.send(b"\xDE\xAD\xBE\xEF\xCA\xFE")
+    sock1.send(b"\xde\xad\xbe\xef\xca\xfe")
     nbytes = sock2.recv_into(data, 4)
     assert nbytes == 4
-    assert data[0] == struct.unpack("I", b"\xDE\xAD\xBE\xEF")[0]
+    assert data[0] == struct.unpack("I", b"\xde\xad\xbe\xef")[0]
     assert data[1] == 2
     assert data[2] == 3
 
