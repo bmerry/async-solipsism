@@ -26,7 +26,7 @@ from .exceptions import SolipsismError, SolipsismWarning
 DEFAULT_CAPACITY = 65536
 
 
-__all__ = ('Socket', 'ListenSocket', 'Queue', 'socketpair')
+__all__ = ('ListenSocket', 'Queue', 'Socket', 'socketpair')
 
 
 def _view(bytes):
