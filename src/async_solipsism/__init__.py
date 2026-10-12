@@ -26,7 +26,7 @@ from .loop import EventLoop  # redundant, but keeps static analysis happy
 from .socket import *  # noqa
 
 __all__ = exceptions.__all__ + socket.__all__ + loop.__all__  # noqa
-__version__ = "0.9"
+__version__ = "0.10"
 
 if sys.version_info < (3, 16, 0):
     # asyncio.DefaultEventLoopPolicy is deprecated, so we have to jump through

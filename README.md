@@ -209,6 +209,20 @@ Calling functions that are not supported will generally raise
 
 ## Changelog
 
+### 0.10
+
+- Drop support for end-of-life Python 3.10.
+- Deprecate `EventLoopPolicy` (since Python has deprecated event loop policies),
+  and avoid defining it on Python 3.16 (once it appears).
+- Update pytest-asyncio integration instructions for pytest-asyncio 1.4.
+- Remove `test` extra in favour of a dependency group.
+- Add `socket_factory` argument to `aiohappyeyeballs_start_connection`, to fix
+  compatibility with aiohttp.
+- Update dependencies used for development/CI.
+- Test against Python 3.15.
+- Reformat code using `ruff`
+- Address some warnings from `ruff`.
+
 ### 0.9
 
 - Drop support for end-of-life Python 3.8 and 3.9.
