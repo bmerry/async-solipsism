@@ -38,7 +38,11 @@ version = {attr = "async_solipsism.__version__"}
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP", "RUF100"]
+extend-select = ["E", "F", "I", "W", "UP"]
+extend-ignore = [
+    "SIM117",    # Combining nested with statements
+    "ASYNC230",  # Would require depending on anyio or a similar package
+]
 
 [tool.pytest]
 asyncio_default_fixture_loop_scope = "function"
