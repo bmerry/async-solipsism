@@ -215,7 +215,7 @@ async def test_sendfile(tmp_path):
     event_loop = asyncio.get_running_loop()
     tmp_file = tmp_path / 'test_sendfile.txt'
     tmp_file.write_bytes(b'Hello world\n')
-    ((reader1, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
+    ((_, writer1), (reader2, writer2)) = await async_solipsism.stream_pairs()
     with open(tmp_file, 'rb') as f:
         await event_loop.sendfile(writer1.transport, f)
     line = await reader2.readline()
