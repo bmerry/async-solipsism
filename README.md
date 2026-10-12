@@ -117,6 +117,11 @@ def event_loop_policy():
     return async_solipsism.EventLoopPolicy()
 ```
 
+Note that `async_solipsism.EventLoopPolicy` is deprecated (due to Python
+deprecating event loop policies) and will be removed in a future version. It
+will also not be available when the Python version is at least 3.16, even on
+the current version of async-solipsism.
+
 #### 0.22 or older
 
 ```python

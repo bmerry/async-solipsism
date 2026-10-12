@@ -24,7 +24,7 @@ from . import selector, socket as _socket
 from .exceptions import SolipsismError
 
 
-__all__ = ('EventLoop', 'EventLoopPolicy', 'aiohappyeyeballs_start_connection', 'stream_pairs')
+__all__ = ('EventLoop', 'aiohappyeyeballs_start_connection', 'stream_pairs')
 
 
 class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
@@ -230,11 +230,6 @@ class EventLoop(asyncio.selector_events.BaseSelectorEventLoop):
         if self._default_executor is None:
             return
         self._default_executor.shutdown(wait=True)
-
-
-class EventLoopPolicy(asyncio.DefaultEventLoopPolicy):
-    def new_event_loop(self) -> EventLoop:
-        return EventLoop()
 
 
 async def stream_pairs(capacity=None):
